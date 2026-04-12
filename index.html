@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Toyota Cartoni - V4.10 Nicolás</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .chip-active { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        .hidden-screen { display: none; }
+        
+        /* ESTILO BURBUJA RECTANGULAR (NUEVO) */
+        .brake-btn-rect { 
+            flex: 1; 
+            padding: 14px 0; 
+            font-size: 11px; 
+            font-weight: 900; 
+            color: #9ca3af; 
+            transition: all 0.2s ease; 
+            border-right: 1px solid #e5e7eb;
+            background-color: transparent;
+        }
+        .brake-btn-rect:last-child { border-right: none; }
+        .brake-selected-red { background-color: #ef4444 !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
+        .brake-selected-yellow { background-color: #eab308 !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(234, 179, 8, 0.4); }
+        .brake-selected-green { background-color: #22c55e !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4); }
+
+        @keyframes soft-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.02); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+        .animate-ready-soft { animation: soft-pulse 2s infinite ease-in-out; }
+        @keyframes bounce-arrow { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-12px);} 60% {transform: translateY(-6px);} }
+        .scroll-indicator-active { animation: bounce-arrow 2s infinite; }
+
+        .preview-img { width: 45px; height: 45px; object-fit: cover; border-radius: 0.75rem; border: 2px solid #ef4444; display: none; margin-right: 8px; }
+
+        /* ESTILOS PDF ORIGINALES */
+        #render-area-p1, #render-area-p2 { position: absolute; left: -9999px; width: 800px; background: white; font-family: sans-serif; }
+        .pdf-header { background: #ef4444; color: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .pdf-section-title { background: #1f2937; color: white; padding: 10px 20px; font-weight: bold; text-transform: uppercase; margin-top: 10px; font-size: 14px; }
+        .pdf-row { display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #eee; background: white; }
+        .pdf-dot-group { display: flex; gap: 8px; width: 80px; justify-content: center; }
+        .pdf-dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #ccc; background: #f3f4f6; }
+        .dot-green { background: #22c55e !important; border-color: #16a34a !important; }
+        .dot-yellow { background: #eab308 !important; border-color: #ca8a04 !important; }
+        .dot-red { background: #ef4444 !important; border-color: #dc2626 !important; }
+        .foto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
+        .foto-item { border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; }
+        .foto-img-large { width: 100%; height: 250px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
+    </style>
+</head>
+<body class="bg-gray-200 font-sans pb-10">
+
+    <div id="pantalla-inicio" class="min-h-screen p-4 flex flex-col items-center">
+        <div class="text-center mb-6 pt-4">
+            <div class="bg-red-600 text-white inline-block px-8 py-2 rounded-b-2xl font-black text-3xl mb-2 shadow-lg">TOYOTA</div>
+            <h1 class="text-gray-800 text-lg font-bold uppercase tracking-tight">Control de Calidad</h1>
+            <p class="text-gray-500 text-[10px] font-bold tracking-widest uppercase italic">Servicio Técnico Cartoni</p>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-xl p-6 border border-gray-200 w-full max-w-md space-y-6">
+            <div class="relative z-10">
+                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider">Código de Técnico</span>
+                <div class="flex flex-wrap gap-2 pt-2">
+                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">301</button>
+                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">305</button>
+                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">315</button>
+                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">316</button>
+                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">431</button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="relative">
+                    <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Asesor de Servicio</span>
+                    <select id="asesor" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 appearance-none uppercase">
+                        <option disabled selected>Seleccionar...</option>
+                        <option>Alejandro Vilches</option>
+                        <option>Nicolas Flores</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="relative">
+                        <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">N° OT</span>
+                        <input type="number" id="ot" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase">
+                    </div>
+                    <div class="relative">
+                        <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Fecha</span>
+                        <input type="date" id="fecha" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-[11px] font-bold bg-gray-50">
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Modelo del Vehículo</span>
+                <input type="text" id="modelo" placeholder="EJ: COROLLA CROSS" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase tracking-widest">
+            </div>
+
+            <div class="relative">
+                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Identificación Patente</span>
+                <input type="text" id="patente" placeholder="ABCD-12" class="w-full border-2 border-red-200 rounded-3xl px-4 py-6 text-3xl font-black bg-red-50 text-red-700 text-center uppercase tracking-[0.2em] shadow-inner">
+            </div>
+
+            <button id="btn-iniciar" onclick="cambiarPantalla('checklist')" class="w-full bg-gray-900 text-white font-black py-5 rounded-[2rem] shadow-2xl active:scale-95 transition-all flex items-center justify-center space-x-3">
+                <i class="fa-solid fa-play text-xl"></i>
+                <span>INICIAR CHEQUEO</span>
+            </button>
+
+            <div id="aviso-deslizar" class="hidden-screen text-center p-5 bg-white border-2 border-red-200 rounded-2xl shadow-inner animate-ready-soft">
+                <p class="font-black text-sm uppercase tracking-widest text-red-600">¡Listo! Desliza hacia abajo</p>
+                <i class="fa-solid fa-angles-down text-2xl mt-1 text-red-600 scroll-indicator-active"></i>
+            </div>
+        </div>
+    </div>
+
+    <div id="pantalla-checklist" class="hidden-screen p-4 space-y-8 max-w-md mx-auto">
+        
+        <header class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-md sticky top-0 z-50 border-b-2 border-red-600">
+            <button onclick="cambiarPantalla('inicio')" class="text-gray-400 p-2"><i class="fa-solid fa-arrow-left"></i></button>
+            <span id="label-patente" class="font-black text-red-600 text-xl tracking-tighter uppercase">---</span>
+            <span class="text-[8px] font-black text-gray-400 uppercase text-right leading-none">Cartoni<br>Técnico</span>
+        </header>
+
+        <div class="space-y-4">
+            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">I. Dentro del Vehículo</h2>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Luces y Bocina</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-luces" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-luces')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de plumillas y funcionamiento</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-plumillas" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-plumillas')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de A/C y Calefacción</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-ac" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-ac')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+<div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
+    <div class="bg-black/5 px-4 py-3 border-b border-black/10">
+        <h3 class="text-gray-700 font-bold text-center text-xs uppercase">Alzavidrios y Cierre Centralizado</h3>
+    </div>
+    <div class="p-4">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex space-x-3">
+                <button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm">
+                    <i class="fa-solid fa-check text-xl"></i>
+                </button>
+                <button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                </button>
+            </div>
+            <div class="flex items-center">
+                <img id="prev-centralizado" class="preview-img">
+                <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95">
+                    <i class="fa-solid fa-camera text-xl"></i>
+                    <span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                    <input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-centralizado')">
+                </label>
+            </div>
+        </div>
+        <div class="relative">
+            <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+            <input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none">
+        </div>
+    </div>
+</div>
+        <div class="space-y-4">
+            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">II. Compartimiento Motor</h2>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Inspección visual de fugas y correas</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-fugas" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-fugas')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Niveles de Fluidos (Aceite, Refrig, Frenos)</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-fluidos" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-fluidos')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div id="card-bateria" class="bg-white rounded-[2.5rem] p-5 shadow-lg border-4 border-gray-300 transition-all duration-300" data-section="II. COMPARTIMIENTO MOTOR">
+                <h3 class="text-gray-800 font-black text-center text-[11px] uppercase mb-4 tracking-tighter italic border-b border-gray-100 pb-2">Estado de Batería y Sistema de Carga</h3>
+                <div class="flex items-start justify-between mb-4">
+                    <div class="space-y-3 flex-1 pr-4">
+                        <div class="flex items-center bg-gray-50 p-2 rounded-xl border"><span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje:</span><input type="number" step="0.1" placeholder="0.0" class="w-full bg-transparent font-black focus:outline-none text-gray-700"></div>
+                        <div class="flex items-center bg-gray-50 p-2 rounded-xl border"><span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">SOH %:</span><input type="number" id="input-soh" oninput="evaluarBateria(this.value)" placeholder="0" class="w-full bg-transparent font-black focus:outline-none text-gray-700"></div>
+                    </div>
+                    <div class="flex items-center"><img id="prev-bateria" class="preview-img"><label class="bg-gray-800 text-white w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[8px] mt-1 font-black uppercase tracking-tight">Foto</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-bateria')"></label></div>
+                </div>
+                <p id="alerta-bateria" class="text-[10px] font-black mb-1 text-gray-400 text-center uppercase italic">Ingrese SOH para evaluar</p>
+                <input type="text" id="obs-bateria" placeholder="NOTAS TÉCNICAS BATERÍA..." class="w-full border-b text-[10px] focus:outline-none uppercase py-2 bg-transparent text-center font-bold">
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">III. Bajo el Vehículo</h2>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Amortiguadores</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-amort" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-amort')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Fuelles (Transmisión, Rótulas, Dirección)</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-fuelles" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-fuelles')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Neumáticos y repuesto</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-neuma" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-neuma')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
+                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Línea de Escape y Sujeciones</h3></div>
+                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-escape" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-escape')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">IV. Pastillas de Freno</h2>
+            
+            <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-4 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" id="card-frenos-del">
+                <div class="bg-red-700 text-white px-6 py-3 flex justify-between items-center">
+                    <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Delanteras</h3>
+                    <div class="flex items-center">
+                        <img id="prev-freno-del" class="preview-img" style="border-color: white;">
+                        <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30">
+                            <i class="fa-solid fa-camera text-sm"></i>
+                            <input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-freno-del')">
+                        </label>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <span class="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-tight">Desgaste Promedio</span>
+                    <div id="group-DEL" class="flex bg-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden shadow-inner">
+                        <button onclick="updateBrake('DEL', 30, this)" class="brake-btn-rect">-30%</button>
+                        <button onclick="updateBrake('DEL', 40, this)" class="brake-btn-rect">40%</button>
+                        <button onclick="updateBrake('DEL', 50, this)" class="brake-btn-rect">50%</button>
+                        <button onclick="updateBrake('DEL', 60, this)" class="brake-btn-rect">60%</button>
+                        <button onclick="updateBrake('DEL', 70, this)" class="brake-btn-rect">+70%</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-8 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" id="card-frenos-tras">
+                <div class="bg-gray-800 text-white px-6 py-3 flex justify-between items-center">
+                    <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras</h3>
+                    <div class="flex items-center">
+                        <img id="prev-freno-tras" class="preview-img" style="border-color: white;">
+                        <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30">
+                            <i class="fa-solid fa-camera text-sm"></i>
+                            <input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-freno-tras')">
+                        </label>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <span class="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-tight">Desgaste Promedio</span>
+                    <div id="group-TRAS" class="flex bg-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden shadow-inner">
+                        <button onclick="updateBrake('TRAS', 30, this)" class="brake-btn-rect">-30%</button>
+                        <button onclick="updateBrake('TRAS', 40, this)" class="brake-btn-rect">40%</button>
+                        <button onclick="updateBrake('TRAS', 50, this)" class="brake-btn-rect">50%</button>
+                        <button onclick="updateBrake('TRAS', 60, this)" class="brake-btn-rect">60%</button>
+                        <button onclick="updateBrake('TRAS', 70, this)" class="brake-btn-rect">+70%</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+<div class="space-y-4 mb-10">
+    <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">V. Observaciones Adicionales</h2>
+    <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="V. OBSERVACIONES ADICIONALES">
+        <div class="bg-black/5 px-4 py-3 border-b border-black/10">
+            <h3 class="text-gray-700 font-bold text-center text-xs uppercase">Comentarios Generales del Técnico</h3>
+        </div>
+        <div class="p-4">
+    <div class="relative">
+        <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider z-10">Notas Técnicas</span>
+        
+        <textarea id="notas-adicionales" 
+            placeholder="ESCRIBA AQUÍ CUALQUIER DETALLE ADICIONAL O RECOMENDACIÓN..." 
+            class="w-full border-2 border-gray-200 rounded-2xl px-4 py-4 text-sm bg-white/80 uppercase focus:outline-none min-h-[140px] resize-none font-bold text-gray-700 shadow-inner">
+        </textarea>
+    </div>
+</div>
+    </div>
+</div>
+        <button onclick="generarPDF()" class="w-full bg-red-600 text-white font-black py-6 rounded-[2.5rem] shadow-2xl uppercase tracking-widest active:scale-95 transition-all mt-10 flex flex-col items-center justify-center">
+            <i class="fa-solid fa-file-pdf text-3xl mb-2"></i>
+            <span class="text-sm">FINALIZAR REGISTRO Y DESCARGAR PDF</span>
+        </button>
+
+    </div>
+
+    <div id="render-area-p1"></div>
+    <div id="render-area-p2"></div>
+
+    <script>
+        let tecnicoGlobal = "";
+        document.getElementById('fecha').valueAsDate = new Date();
+
+        function selectTech(btn) { 
+            document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('chip-active')); 
+            btn.classList.add('chip-active'); 
+            tecnicoGlobal = btn.innerText;
+        }
+
+        function cambiarPantalla(p) { 
+            if(p === 'checklist') { 
+                const btn = document.getElementById('btn-iniciar');
+                const aviso = document.getElementById('aviso-deslizar');
+                document.getElementById('label-patente').innerText = document.getElementById('patente').value || '---'; 
+                btn.classList.add('hidden-screen');
+                aviso.classList.remove('hidden-screen');
+                document.getElementById('pantalla-checklist').classList.remove('hidden-screen'); 
+                window.scrollTo(0,0);
+            } else { 
+                document.getElementById('pantalla-checklist').classList.add('hidden-screen'); 
+                document.getElementById('pantalla-inicio').classList.remove('hidden-screen'); 
+                document.getElementById('btn-iniciar').classList.remove('hidden-screen');
+                document.getElementById('aviso-deslizar').classList.add('hidden-screen');
+            } 
+        }
+
+        function previewFile(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => { preview.src = reader.result; preview.style.display = 'block'; }
+            if (file) reader.readAsDataURL(file);
+        }
+
+        function marcarBurbuja(btn, color) { 
+            const card = btn.closest('.card-inspeccion'); 
+            card.setAttribute('data-status', color); 
+            card.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'bg-yellow-100', 'border-yellow-500'); 
+            if (color === 'verde') card.classList.add('bg-green-100', 'border-green-500'); 
+            else if (color === 'rojo') card.classList.add('bg-red-100', 'border-red-500'); 
+            else if (color === 'amarillo') card.classList.add('bg-yellow-100', 'border-yellow-500'); 
+        }
+
+        /* FUNCIÓN DE FRENOS ACTUALIZADA PARA BURBUJA RECTANGULAR */
+        function updateBrake(ruedaId, porcentaje, btn) { 
+            const card = btn.closest('.card-inspeccion');
+            const group = btn.parentElement; 
+            
+            // Limpiar estados previos de los botones
+            group.querySelectorAll('button').forEach(b => {
+                b.classList.remove('brake-selected-red', 'brake-selected-yellow', 'brake-selected-green');
+            });
+
+            let color = "verde";
+            let btnClass = "brake-selected-green";
+
+            if (porcentaje <= 30) { 
+                color = "rojo";
+                btnClass = "brake-selected-red";
+            } else if (porcentaje <= 50) { 
+                color = "amarillo";
+                btnClass = "brake-selected-yellow";
+            }
+
+            // Aplicar selección
+            btn.classList.add(btnClass);
+            card.setAttribute('data-status', color); 
+            card.setAttribute('data-obs', 'Promedio: ' + porcentaje + '%');
+
+            // Feedback visual en la tarjeta
+            card.classList.remove('bg-green-50', 'bg-red-50', 'bg-yellow-50', 'border-green-500', 'border-red-500', 'border-yellow-500', 'border-gray-300');
+            if(color === "verde") card.classList.add('bg-green-50', 'border-green-500');
+            else if(color === "amarillo") card.classList.add('bg-yellow-50', 'border-yellow-500');
+            else card.classList.add('bg-red-50', 'border-red-500');
+        }
+
+        function evaluarBateria(soh) { 
+    const p = document.getElementById('alerta-bateria'); 
+    const card = document.getElementById('card-bateria'); 
+    
+    // Limpiamos colores previos
+    card.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'bg-yellow-100', 'border-yellow-500', 'border-gray-300');
+
+    if(!soh || soh === "") { 
+        p.innerText = "Ingrese SOH para evaluar"; 
+        card.removeAttribute('data-status'); 
+        card.classList.add('border-gray-300'); // Color neutro original
+        return; 
+    } 
+
+    const valor = parseInt(soh);
+
+    if(valor >= 80) { 
+        p.innerText = "🟢 Buen Estado"; 
+        card.setAttribute('data-status', 'verde'); 
+        card.classList.add('bg-green-100', 'border-green-500');
+    } 
+    else if(valor >= 60) { 
+        p.innerText = "🟡 Cambio Preventivo"; 
+        card.setAttribute('data-status', 'amarillo'); 
+        card.classList.add('bg-yellow-100', 'border-yellow-500');
+    } 
+    else { 
+        p.innerText = "🔴 Cambio"; 
+        card.setAttribute('data-status', 'rojo'); 
+        card.classList.add('bg-red-100', 'border-red-500');
+    } 
+}
+
+        /* MOTOR PDF ORIGINAL INTEGRADO */
+        async function generarPDF() {
+            const area1 = document.getElementById('render-area-p1');
+            const area2 = document.getElementById('render-area-p2');
+            const pat = document.getElementById('patente').value.toUpperCase() || 'S/P';
+            const ot = document.getElementById('ot').value || '---';
+            const mod = document.getElementById('modelo').value.toUpperCase() || '---';
+            const ase = document.getElementById('asesor').value || '---';
+            const fechaVal = document.getElementById('fecha').value || new Date().toLocaleDateString();
+
+            let html1 = `
+                <div class="pdf-header">
+                    <div style="display: flex; flex-direction: column;">
+                        <h1 style="font-size: 38px; font-weight: 900; margin: 0; line-height: 1.2; display: block;">TOYOTA</h1>
+                        <p style="margin-top: 5px; margin-bottom: 0; font-weight: bold; letter-spacing: 2px; font-size: 12px; display: block;">CONTROL DE CALIDAD - CARTONI</p>
+                    </div>
+                    <div style="text-align: right; font-size: 14px;">
+                        <p style="margin:0; font-weight: 900;">OT: ${ot} | PATENTE: ${pat}</p>
+                        <p style="margin:0; font-weight: bold;">Modelo: ${mod}</p>
+                        <p style="margin:0; font-size:10px; opacity:0.8;">Técnico: ${tecnicoGlobal} | Asesor: ${ase} | Fecha: ${fechaVal}</p>
+                    </div>
+                </div>
+            `;
+
+            let html2 = `
+                <div class="pdf-header" style="background:#1f2937;">
+                    <div><h1 style="font-size: 28px; font-weight: 900; margin:0;">EVIDENCIA</h1><p style="font-size:12px;">REGISTRO FOTOGRÁFICO - PATENTE ${pat}</p></div>
+                </div>
+                <div class="foto-grid">
+            `;
+
+            let currentSec = "";
+            let tieneFotos = false;
+            const tarjetas = document.querySelectorAll('[data-section]');
+            
+            tarjetas.forEach(card => {
+                const sec = card.getAttribute('data-section');
+                const tit = card.querySelector('h3').innerText;
+                const status = card.getAttribute('data-status');
+                const obsInput = card.querySelector('input[type="text"]');
+                const obsArea = card.querySelector('textarea');
+                let obs = obsInput ? obsInput.value : (obsArea ? obsArea.value : (card.getAttribute('data-obs') || ""));
+                const img = card.querySelector('.preview-img');
+                const foto = (img && img.src.startsWith('data')) ? img.src : null;
+
+                if(sec !== currentSec) {
+    html1 += `<div class="pdf-section-title">${sec}</div>`;
+    
+    // ESTO ES LO ÚNICO QUE SE SUMA:
+    if (sec !== "V. OBSERVACIONES ADICIONALES") {
+        html1 += `
+            <div style="display: flex; padding: 5px 20px; background: #f9fafb; border-bottom: 1px solid #eee;">
+                <div style="width: 40%;"></div>
+                <div style="width: 20%; display: flex; gap: 8px; justify-content: center;">
+                    <span style="font-size: 10px; width: 14px; text-align: center; color: #9ca3af;">✔</span>
+                    <span style="font-size: 10px; width: 14px; text-align: center; color: #9ca3af;">⚠</span>
+                    <span style="font-size: 10px; width: 14px; text-align: center; color: #9ca3af;">✖</span>
+                </div>
+                <div style="width: 40%;"></div>
+            </div>`;
+    }
+    currentSec = sec;
+}
+
+                // Diseño especial para la Sección V (sin semáforo)
+                if (sec === "V. OBSERVACIONES ADICIONALES") {
+                    html1 += `
+                        <div style="padding: 15px 20px; border-bottom: 1px solid #eee; background: white; width: 760px;">
+                            <div style="font-size: 11px; color: #1f2937; line-height: 1.5; white-space: pre-wrap; font-weight: bold; text-align: left; word-wrap: break-word; overflow-wrap: break-word;">${obs ? obs : 'Sin comentarios adicionales.'}</div>
+                        </div>
+                    `;
+                } else {
+                    // Diseño estándar con semáforo para I, II, III y IV
+                    html1 += `
+                        <div class="pdf-row">
+                            <div style="width: 40%; font-weight: bold; font-size: 11px; color:#1f2937;">${tit}</div>
+                            <div class="pdf-dot-group" style="width: 20%;">
+                                <div class="pdf-dot ${status === 'verde' ? 'dot-green' : ''}"></div>
+                                <div class="pdf-dot ${status === 'amarillo' ? 'dot-yellow' : ''}"></div>
+                                <div class="pdf-dot ${status === 'rojo' ? 'dot-red' : ''}"></div>
+                            </div>
+                            <div style="width: 40%; font-size: 10px; color: #6b7280; font-style: italic; padding-left:10px; border-left:1px solid #eee;">
+                                ${obs ? obs : 'Sin observaciones'}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                if(foto) {
+                    tieneFotos = true;
+                    html2 += `<div class="foto-item"><p style="font-size:10px; font-weight:bold; margin-bottom:5px; color:#ef4444; text-transform:uppercase;">${tit}</p><img src="${foto}" class="foto-img-large"></div>`;
+                }
+            });
+
+            html2 += `</div>`;
+            area1.innerHTML = html1;
+            area2.innerHTML = html2;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+
+            const canvas1 = await html2canvas(area1, { scale: 2, useCORS: true });
+            pdf.addImage(canvas1.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, (canvas1.height * 210) / canvas1.width);
+
+            if(tieneFotos) {
+                pdf.addPage();
+                const canvas2 = await html2canvas(area2, { scale: 2, useCORS: true });
+                pdf.addImage(canvas2.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, (canvas2.height * 210) / canvas2.width);
+            }
+
+            pdf.save(`Checklist_Toyota_${pat}.pdf`);
+            area1.innerHTML = "";
+            area2.innerHTML = "";
+        }
+    </script>
+</body>
+</html>
