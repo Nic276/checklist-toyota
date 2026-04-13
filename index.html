@@ -451,39 +451,41 @@
     
     // ESTO ES LO ÚNICO QUE SE SUMA:
     if (sec !== "V. OBSERVACIONES ADICIONALES") {
-        html1 += `
-            <div style="display: flex; padding: 5px 20px; background: #f9fafb; border-bottom: 1px solid #eee;">
-                <div style="width: 40%;"></div>
-                <div style="width: 20%; display: flex; gap: 8px; justify-content: center;">
-                    <span style="font-size: 10px; width: 14px; text-align: center; color: #9ca3af;">✔</span>
-                    <span style="font-size: 10px; width: 14px; text-align: center; color: #9ca3af;">⚠</span>
-                    <span style="font-size: 10px; width: 14px; text-align: center; color: #9ca3af;">✖</span>
-                </div>
-                <div style="width: 40%;"></div>
-            </div>`;
-    }
+    html1 += `
+        <div style="display: flex; padding: 8px 20px; background: #eeeeee; border-bottom: 2px solid #000;">
+            <div style="width: 40%;"></div>
+            <div style="width: 20%; display: flex; gap: 8px; justify-content: center;">
+                <span style="font-size: 14px; font-weight: 900; width: 14px; text-align: center; color: #000000;">✔</span>
+                <span style="font-size: 14px; font-weight: 900; width: 14px; text-align: center; color: #000000;">!</span>
+                <span style="font-size: 14px; font-weight: 900; width: 14px; text-align: center; color: #000000;">X</span>
+            </div>
+            <div style="width: 40%;"></div>
+        </div>
+    `;
+}
     currentSec = sec;
 }
 
                 // Diseño especial para la Sección V (sin semáforo)
                 if (sec === "V. OBSERVACIONES ADICIONALES") {
+    html1 += `
+        <div style="padding: 15px 20px; border-bottom: 2px solid #000; background: white; width: 760px;">
+            <div style="font-size: 14px; color: #000000; line-height: 1.4; white-space: pre-wrap; font-weight: bold; text-align: left; word-wrap: break-word; overflow-wrap: break-word;">
+                ${obs ? obs : 'Sin comentarios adicionales.'}
+            </div>
+        </div>
+    `;
+} else {
                     html1 += `
-                        <div style="padding: 15px 20px; border-bottom: 1px solid #eee; background: white; width: 760px;">
-                            <div style="font-size: 11px; color: #1f2937; line-height: 1.5; white-space: pre-wrap; font-weight: bold; text-align: left; word-wrap: break-word; overflow-wrap: break-word;">${obs ? obs : 'Sin comentarios adicionales.'}</div>
-                        </div>
-                    `;
-                } else {
-                    // Diseño estándar con semáforo para I, II, III y IV
-                    html1 += `
-                        <div class="pdf-row">
-                            <div style="width: 40%; font-weight: bold; font-size: 11px; color:#1f2937;">${tit}</div>
-                            <div class="pdf-dot-group" style="width: 20%;">
-                                <div class="pdf-dot ${status === 'verde' ? 'dot-green' : ''}"></div>
-                                <div class="pdf-dot ${status === 'amarillo' ? 'dot-yellow' : ''}"></div>
-                                <div class="pdf-dot ${status === 'rojo' ? 'dot-red' : ''}"></div>
+                        <div class="pdf-row" style="display: flex; align-items: center; border-bottom: 1px solid #000; padding: 6px 0;">
+                            <div style="width: 40%; font-weight: bold; font-size: 11px; color: #000;">${tit}</div>
+                            <div class="pdf-dot-group" style="width: 20%; display: flex; gap: 8px; justify-content: center;">
+                                <div class="pdf-dot ${status === 'verde' ? 'dot-green' : ''}" style="border: 1px solid #000;"></div>
+                                <div class="pdf-dot ${status === 'amarillo' ? 'dot-yellow' : ''}" style="border: 1px solid #000;"></div>
+                                <div class="pdf-dot ${status === 'rojo' ? 'dot-red' : ''}" style="border: 1px solid #000;"></div>
                             </div>
-                            <div style="width: 40%; font-size: 10px; color: #6b7280; font-style: italic; padding-left:10px; border-left:1px solid #eee;">
-                                ${obs ? obs : 'Sin observaciones'}
+                            <div style="width: 40%; font-size: 11px; color: #000; font-weight: bold; padding-left: 10px; border-left: 2px solid #000; word-wrap: break-word;">
+                                ${obs ? obs : ''}
                             </div>
                         </div>
                     `;
