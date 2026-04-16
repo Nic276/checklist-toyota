@@ -3,42 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Toyota Cartoni - V4.10 Nicolás</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Toyota Cartoni - Control de Calidad</title>
 
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ef4444">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Toyota QC">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Precarga de conexiones para velocidad -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+    <!-- Tailwind y FontAwesome: necesarios para mostrar la UI -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Registro del Service Worker (caché offline) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .catch(err => console.warn('SW no registrado:', err));
+        });
+      }
+    </script>
+
+    <!-- jsPDF se carga SOLO al generar PDF -->
     <style>
         .chip-active { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
         .hidden-screen { display: none; }
-        
-        /* ESTILO BURBUJA RECTANGULAR (NUEVO) */
+
         .brake-btn-rect { 
-            flex: 1; 
-            padding: 14px 0; 
-            font-size: 11px; 
-            font-weight: 900; 
-            color: #9ca3af; 
-            transition: all 0.2s ease; 
-            border-right: 1px solid #e5e7eb;
-            background-color: transparent;
+            flex: 1; padding: 14px 0; font-size: 11px; font-weight: 900; color: #9ca3af; 
+            transition: all 0.2s ease; border-right: 1px solid #e5e7eb; background-color: transparent;
         }
         .brake-btn-rect:last-child { border-right: none; }
-        .brake-selected-red { background-color: #ef4444 !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4); }
-        .brake-selected-yellow { background-color: #eab308 !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(234, 179, 8, 0.4); }
-        .brake-selected-green { background-color: #22c55e !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4); }
+        .brake-selected-red { background-color: #ef4444 !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(239,68,68,0.4); }
+        .brake-selected-yellow { background-color: #eab308 !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(234,179,8,0.4); }
+        .brake-selected-green { background-color: #22c55e !important; color: white !important; transform: scale(1.05); z-index: 10; box-shadow: 0 4px 10px rgba(34,197,94,0.4); }
 
-        @keyframes soft-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.02); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes soft-pulse { 0%{transform:scale(1);opacity:1;} 50%{transform:scale(1.02);opacity:0.7;} 100%{transform:scale(1);opacity:1;} }
         .animate-ready-soft { animation: soft-pulse 2s infinite ease-in-out; }
-        @keyframes bounce-arrow { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-12px);} 60% {transform: translateY(-6px);} }
+        @keyframes bounce-arrow { 0%,20%,50%,80%,100%{transform:translateY(0);} 40%{transform:translateY(-12px);} 60%{transform:translateY(-6px);} }
         .scroll-indicator-active { animation: bounce-arrow 2s infinite; }
 
-        .preview-img { width: 45px; height: 45px; object-fit: cover; border-radius: 0.75rem; border: 2px solid #ef4444; display: none; margin-right: 8px; }
+        /* Galería de fotos por tarjeta */
+        .photo-gallery { display: flex; flex-wrap: wrap; gap: 4px; max-width: 160px; justify-content: flex-end; margin-bottom: 4px; }
+        .photo-thumb-wrap { position: relative; }
+        .photo-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 0.6rem; border: 2px solid #ef4444; }
+        .photo-thumb-del { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 900; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; line-height: 1; }
 
-        /* ESTILOS PDF ORIGINALES */
-        #render-area-p1, #render-area-p2 { position: absolute; left: -9999px; width: 800px; background: white; font-family: sans-serif; }
+        /* Estilos PDF */
+        .pdf-render-area { position: absolute; left: -9999px; width: 800px; background: white; font-family: sans-serif; }
         .pdf-header { background: #ef4444; color: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
         .pdf-section-title { background: #1f2937; color: white; padding: 10px 20px; font-weight: bold; text-transform: uppercase; margin-top: 10px; font-size: 14px; }
         .pdf-row { display: flex; align-items: center; padding: 10px 20px; border-bottom: 1px solid #eee; background: white; }
@@ -50,473 +70,1100 @@
         .foto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; }
         .foto-item { border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; }
         .foto-img-large { width: 100%; height: 250px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 22px; border-radius: 2rem; font-size: 13px; font-weight: 700; z-index: 9999; transition: opacity 0.4s; opacity: 0; pointer-events: none; }
+        #toast.show { opacity: 1; }
     </style>
 </head>
 <body class="bg-gray-200 font-sans pb-10">
 
-    <div id="pantalla-inicio" class="min-h-screen p-4 flex flex-col items-center">
-        <div class="text-center mb-6 pt-4">
-            <div class="bg-red-600 text-white inline-block px-8 py-2 rounded-b-2xl font-black text-3xl mb-2 shadow-lg">TOYOTA</div>
-            <h1 class="text-gray-800 text-lg font-bold uppercase tracking-tight">Control de Calidad</h1>
-            <p class="text-gray-500 text-[10px] font-bold tracking-widest uppercase italic">Servicio Técnico Cartoni</p>
+<!-- TOAST -->
+<div id="toast">Guardado ✓</div>
+
+<!-- ===== PANTALLA INICIO ===== -->
+<div id="pantalla-inicio" class="min-h-screen p-4 flex flex-col items-center">
+    <div class="text-center mb-6 pt-4">
+        <div class="bg-red-600 text-white inline-block px-8 py-2 rounded-b-2xl font-black text-3xl mb-2 shadow-lg">TOYOTA</div>
+        <h1 class="text-gray-800 text-lg font-bold uppercase tracking-tight">Control de Calidad</h1>
+        <p class="text-gray-500 text-[10px] font-bold tracking-widest uppercase italic">Servicio Técnico Cartoni</p>
+    </div>
+
+    <div class="bg-white rounded-[2.5rem] shadow-xl p-6 border border-gray-200 w-full max-w-md space-y-6">
+        <!-- Técnico -->
+        <div class="relative z-10">
+            <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider">Código de Técnico</span>
+            <div class="flex flex-wrap gap-2 pt-2">
+                <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">301</button>
+                <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">305</button>
+                <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">315</button>
+                <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">316</button>
+                <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">431</button>
+            </div>
         </div>
 
-        <div class="bg-white rounded-[2.5rem] shadow-xl p-6 border border-gray-200 w-full max-w-md space-y-6">
-            <div class="relative z-10">
-                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider">Código de Técnico</span>
-                <div class="flex flex-wrap gap-2 pt-2">
-                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">301</button>
-                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">305</button>
-                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">315</button>
-                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">316</button>
-                    <button type="button" onclick="selectTech(this)" class="tech-chip flex-1 border-2 border-gray-100 rounded-xl py-3 text-sm font-bold text-gray-600">431</button>
-                </div>
+        <div class="space-y-4">
+            <!-- Asesor -->
+            <div class="relative">
+                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Asesor de Servicio</span>
+                <select id="asesor" onchange="guardarFormulario()" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 appearance-none uppercase">
+                    <option value="" disabled selected>Seleccionar...</option>
+                    <option>Alejandro Vilches</option>
+                    <option>Nicolas Flores</option>
+                </select>
             </div>
-
-            <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
                 <div class="relative">
-                    <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Asesor de Servicio</span>
-                    <select id="asesor" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 appearance-none uppercase">
-                        <option disabled selected>Seleccionar...</option>
-                        <option>Alejandro Vilches</option>
-                        <option>Nicolas Flores</option>
-                    </select>
+                    <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">N° OT</span>
+                    <input type="number" id="ot" oninput="guardarFormulario()" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="relative">
-                        <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">N° OT</span>
-                        <input type="number" id="ot" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase">
-                    </div>
-                    <div class="relative">
-                        <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Fecha</span>
-                        <input type="date" id="fecha" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-[11px] font-bold bg-gray-50">
-                    </div>
+                <div class="relative">
+                    <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Fecha</span>
+                    <input type="date" id="fecha" onchange="guardarFormulario()" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-[11px] font-bold bg-gray-50">
                 </div>
             </div>
-
-            <div class="relative">
-                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Modelo del Vehículo</span>
-                <input type="text" id="modelo" placeholder="EJ: COROLLA CROSS" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase tracking-widest">
-            </div>
-
-            <div class="relative">
-                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Identificación Patente</span>
-                <input type="text" id="patente" placeholder="ABCD-12" class="w-full border-2 border-red-200 rounded-3xl px-4 py-6 text-3xl font-black bg-red-50 text-red-700 text-center uppercase tracking-[0.2em] shadow-inner">
-            </div>
-
-            <button id="btn-iniciar" onclick="cambiarPantalla('checklist')" class="w-full bg-gray-900 text-white font-black py-5 rounded-[2rem] shadow-2xl active:scale-95 transition-all flex items-center justify-center space-x-3">
-                <i class="fa-solid fa-play text-xl"></i>
-                <span>INICIAR CHEQUEO</span>
-            </button>
-
-            <div id="aviso-deslizar" class="hidden-screen text-center p-5 bg-white border-2 border-red-200 rounded-2xl shadow-inner animate-ready-soft">
-                <p class="font-black text-sm uppercase tracking-widest text-red-600">¡Listo! Desliza hacia abajo</p>
-                <i class="fa-solid fa-angles-down text-2xl mt-1 text-red-600 scroll-indicator-active"></i>
-            </div>
         </div>
-    </div>
 
-    <div id="pantalla-checklist" class="hidden-screen p-4 space-y-8 max-w-md mx-auto">
-        
-        <header class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-md sticky top-0 z-50 border-b-2 border-red-600">
-            <button onclick="cambiarPantalla('inicio')" class="text-gray-400 p-2"><i class="fa-solid fa-arrow-left"></i></button>
-            <span id="label-patente" class="font-black text-red-600 text-xl tracking-tighter uppercase">---</span>
-            <span class="text-[8px] font-black text-gray-400 uppercase text-right leading-none">Cartoni<br>Técnico</span>
-        </header>
-
-        <div class="space-y-4">
-            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">I. Dentro del Vehículo</h2>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Luces y Bocina</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-luces" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-luces')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de plumillas y funcionamiento</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-plumillas" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-plumillas')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de A/C y Calefacción</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-ac" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-ac')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-<div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO">
-    <div class="bg-black/5 px-4 py-3 border-b border-black/10">
-        <h3 class="text-gray-700 font-bold text-center text-xs uppercase">Alzavidrios y Cierre Centralizado</h3>
-    </div>
-    <div class="p-4">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex space-x-3">
-                <button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm">
-                    <i class="fa-solid fa-check text-xl"></i>
-                </button>
-                <button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-                <button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm">
-                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
-                </button>
-            </div>
-            <div class="flex items-center">
-                <img id="prev-centralizado" class="preview-img">
-                <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95">
-                    <i class="fa-solid fa-camera text-xl"></i>
-                    <span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
-                    <input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-centralizado')">
-                </label>
-            </div>
-        </div>
+        <!-- Modelo -->
         <div class="relative">
-            <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-            <input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none">
-        </div>
-    </div>
-</div>
-        <div class="space-y-4">
-            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">II. Compartimiento Motor</h2>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Inspección visual de fugas y correas</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-fugas" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-fugas')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Niveles de Fluidos (Aceite, Refrig, Frenos)</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-fluidos" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-fluidos')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div id="card-bateria" class="bg-white rounded-[2.5rem] p-5 shadow-lg border-4 border-gray-300 transition-all duration-300" data-section="II. COMPARTIMIENTO MOTOR">
-                <h3 class="text-gray-800 font-black text-center text-[11px] uppercase mb-4 tracking-tighter italic border-b border-gray-100 pb-2">Estado de Batería y Sistema de Carga</h3>
-                <div class="flex items-start justify-between mb-4">
-                    <div class="space-y-3 flex-1 pr-4">
-                        <div class="flex items-center bg-gray-50 p-2 rounded-xl border"><span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje:</span><input type="number" step="0.1" placeholder="0.0" class="w-full bg-transparent font-black focus:outline-none text-gray-700"></div>
-                        <div class="flex items-center bg-gray-50 p-2 rounded-xl border"><span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">SOH %:</span><input type="number" id="input-soh" oninput="evaluarBateria(this.value)" placeholder="0" class="w-full bg-transparent font-black focus:outline-none text-gray-700"></div>
-                    </div>
-                    <div class="flex items-center"><img id="prev-bateria" class="preview-img"><label class="bg-gray-800 text-white w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[8px] mt-1 font-black uppercase tracking-tight">Foto</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-bateria')"></label></div>
-                </div>
-                <p id="alerta-bateria" class="text-[10px] font-black mb-1 text-gray-400 text-center uppercase italic">Ingrese SOH para evaluar</p>
-                <input type="text" id="obs-bateria" placeholder="NOTAS TÉCNICAS BATERÍA..." class="w-full border-b text-[10px] focus:outline-none uppercase py-2 bg-transparent text-center font-bold">
-            </div>
+            <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Modelo del Vehículo</span>
+            <input type="text" id="modelo" oninput="guardarFormulario()" placeholder="EJ: COROLLA CROSS" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase tracking-widest">
         </div>
 
-        <div class="space-y-4">
-            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">III. Bajo el Vehículo</h2>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Amortiguadores</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-amort" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-amort')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Fuelles (Transmisión, Rótulas, Dirección)</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-fuelles" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-fuelles')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Neumáticos y repuesto</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-neuma" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-neuma')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
-            <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO">
-                <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Línea de Escape y Sujeciones</h3></div>
-                <div class="p-4"><div class="flex items-center justify-between mb-4"><div class="flex space-x-3"><button onclick="marcarBurbuja(this, 'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button><button onclick="marcarBurbuja(this, 'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button><button onclick="marcarBurbuja(this, 'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button></div><div class="flex items-center"><img id="prev-escape" class="preview-img"><label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span><input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-escape')"></label></div></div><div class="relative"><span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span><input type="text" placeholder="OBSERVACIONES..." class="w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none"></div></div>
-            </div>
+        <!-- Patente -->
+        <div class="relative">
+            <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Identificación Patente</span>
+            <input type="text" id="patente" oninput="guardarFormulario()" placeholder="ABCD-12" class="w-full border-2 border-red-200 rounded-3xl px-4 py-6 text-3xl font-black bg-red-50 text-red-700 text-center uppercase tracking-[0.2em] shadow-inner">
         </div>
 
-        <div class="space-y-4">
-            <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">IV. Pastillas de Freno</h2>
-            
-            <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-4 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" id="card-frenos-del">
-                <div class="bg-red-700 text-white px-6 py-3 flex justify-between items-center">
-                    <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Delanteras</h3>
-                    <div class="flex items-center">
-                        <img id="prev-freno-del" class="preview-img" style="border-color: white;">
-                        <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30">
-                            <i class="fa-solid fa-camera text-sm"></i>
-                            <input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-freno-del')">
-                        </label>
-                    </div>
-                </div>
-                <div class="p-5">
-                    <span class="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-tight">Desgaste Promedio</span>
-                    <div id="group-DEL" class="flex bg-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden shadow-inner">
-                        <button onclick="updateBrake('DEL', 30, this)" class="brake-btn-rect">-30%</button>
-                        <button onclick="updateBrake('DEL', 40, this)" class="brake-btn-rect">40%</button>
-                        <button onclick="updateBrake('DEL', 50, this)" class="brake-btn-rect">50%</button>
-                        <button onclick="updateBrake('DEL', 60, this)" class="brake-btn-rect">60%</button>
-                        <button onclick="updateBrake('DEL', 70, this)" class="brake-btn-rect">+70%</button>
-                    </div>
-                </div>
-            </div>
+        <!-- Error de validación -->
+        <div id="error-inicio" class="hidden-screen text-center text-red-600 text-xs font-black uppercase tracking-wide bg-red-50 border border-red-200 rounded-xl py-2 px-3">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Completa todos los campos para continuar
+        </div>
 
-            <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-8 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" id="card-frenos-tras">
-                <div class="bg-gray-800 text-white px-6 py-3 flex justify-between items-center">
-                    <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras</h3>
-                    <div class="flex items-center">
-                        <img id="prev-freno-tras" class="preview-img" style="border-color: white;">
-                        <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30">
-                            <i class="fa-solid fa-camera text-sm"></i>
-                            <input type="file" capture="camera" accept="image/*" class="hidden" onchange="previewFile(this, 'prev-freno-tras')">
-                        </label>
-                    </div>
-                </div>
-                <div class="p-5">
-                    <span class="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-tight">Desgaste Promedio</span>
-                    <div id="group-TRAS" class="flex bg-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden shadow-inner">
-                        <button onclick="updateBrake('TRAS', 30, this)" class="brake-btn-rect">-30%</button>
-                        <button onclick="updateBrake('TRAS', 40, this)" class="brake-btn-rect">40%</button>
-                        <button onclick="updateBrake('TRAS', 50, this)" class="brake-btn-rect">50%</button>
-                        <button onclick="updateBrake('TRAS', 60, this)" class="brake-btn-rect">60%</button>
-                        <button onclick="updateBrake('TRAS', 70, this)" class="brake-btn-rect">+70%</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-<div class="space-y-4 mb-10">
-    <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">V. Observaciones Adicionales</h2>
-    <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="V. OBSERVACIONES ADICIONALES">
-        <div class="bg-black/5 px-4 py-3 border-b border-black/10">
-            <h3 class="text-gray-700 font-bold text-center text-xs uppercase">Comentarios Generales del Técnico</h3>
-        </div>
-        <div class="p-4">
-    <div class="relative">
-        <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider z-10">Notas Técnicas</span>
-        
-        <textarea id="notas-adicionales" 
-            placeholder="ESCRIBA AQUÍ CUALQUIER DETALLE ADICIONAL O RECOMENDACIÓN..." 
-            class="w-full border-2 border-gray-200 rounded-2xl px-4 py-4 text-sm bg-white/80 uppercase focus:outline-none min-h-[140px] resize-none font-bold text-gray-700 shadow-inner">
-        </textarea>
-    </div>
-</div>
-    </div>
-</div>
-        <button onclick="generarPDF()" class="w-full bg-red-600 text-white font-black py-6 rounded-[2.5rem] shadow-2xl uppercase tracking-widest active:scale-95 transition-all mt-10 flex flex-col items-center justify-center">
-            <i class="fa-solid fa-file-pdf text-3xl mb-2"></i>
-            <span class="text-sm">FINALIZAR REGISTRO Y DESCARGAR PDF</span>
+        <button id="btn-iniciar" onclick="validarYContinuar()" class="w-full bg-gray-900 text-white font-black py-5 rounded-[2rem] shadow-2xl active:scale-95 transition-all flex items-center justify-center space-x-3">
+            <i class="fa-solid fa-play text-xl"></i>
+            <span>INICIAR CHEQUEO</span>
         </button>
 
+        <div id="aviso-deslizar" class="hidden-screen text-center p-5 bg-white border-2 border-red-200 rounded-2xl shadow-inner animate-ready-soft">
+            <p class="font-black text-sm uppercase tracking-widest text-red-600">¡Listo! Desliza hacia abajo</p>
+            <i class="fa-solid fa-angles-down text-2xl mt-1 text-red-600 scroll-indicator-active"></i>
+        </div>
+    </div>
+</div>
+
+<!-- ===== PANTALLA CHECKLIST ===== -->
+<div id="pantalla-checklist" class="hidden-screen p-4 space-y-8 max-w-md mx-auto">
+
+    <header class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-md sticky top-0 z-50 border-b-2 border-red-600">
+        <button onclick="cambiarPantalla('inicio')" class="text-gray-400 p-2"><i class="fa-solid fa-arrow-left"></i></button>
+        <span id="label-patente" class="font-black text-red-600 text-xl tracking-tighter uppercase">---</span>
+        <button onclick="confirmarReset()" class="bg-gray-100 text-gray-500 rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-wide active:scale-95 transition-all">
+            <i class="fa-solid fa-rotate-left mr-1"></i>Reset
+        </button>
+    </header>
+
+    <!-- ===== SECCIÓN I ===== -->
+    <div class="space-y-4">
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">I. Dentro del Vehículo</h2>
+
+        <!-- Luces y Bocina -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="luces">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Luces y Bocina</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-luces"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'luces')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Plumillas -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="plumillas">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de plumillas y funcionamiento</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-plumillas"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'plumillas')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- A/C y Calefacción -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="ac">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de A/C y Calefacción</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-ac"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'ac')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Alzavidrios -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="centralizado">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Alzavidrios y Cierre Centralizado</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-centralizado"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'centralizado')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="render-area-p1"></div>
-    <div id="render-area-p2"></div>
+    <!-- ===== SECCIÓN II ===== -->
+    <div class="space-y-4">
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">II. Compartimiento Motor</h2>
 
-    <script>
-        let tecnicoGlobal = "";
+        <!-- Fugas y Correas -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR" data-card-id="fugas">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Inspección visual de fugas y correas</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-fugas"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'fugas')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Fluidos -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR" data-card-id="fluidos">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Niveles de Fluidos (Aceite, Refrig, Frenos)</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-fluidos"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'fluidos')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Batería -->
+        <div id="card-bateria" class="card-inspeccion bg-white rounded-[2.5rem] p-5 shadow-lg border-4 border-gray-300 transition-all duration-300" data-section="II. COMPARTIMIENTO MOTOR" data-card-id="bateria">
+            <h3 class="text-gray-800 font-black text-center text-[11px] uppercase mb-4 tracking-tighter italic border-b border-gray-100 pb-2">Estado de Batería y Sistema de Carga</h3>
+            <div class="flex items-start justify-between mb-4">
+                <div class="space-y-3 flex-1 pr-4">
+                    <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
+                        <span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje:</span>
+                        <input type="number" id="input-voltaje" step="0.1" placeholder="0.0" oninput="guardarChecklist()" class="w-full bg-transparent font-black focus:outline-none text-gray-700">
+                    </div>
+                    <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
+                        <span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">SOH %:</span>
+                        <input type="number" id="input-soh" oninput="evaluarBateria(this.value)" placeholder="0" class="w-full bg-transparent font-black focus:outline-none text-gray-700">
+                    </div>
+                </div>
+                <div class="flex flex-col items-end">
+                    <div class="photo-gallery" id="photos-bateria"></div>
+                    <label class="bg-gray-800 text-white w-16 h-16 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                        <i class="fa-solid fa-camera text-xl"></i><span class="text-[8px] mt-1 font-black uppercase tracking-tight">Foto</span>
+                        <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'bateria')">
+                    </label>
+                </div>
+            </div>
+            <p id="alerta-bateria" class="text-[10px] font-black mb-1 text-gray-400 text-center uppercase italic">Ingrese SOH para evaluar</p>
+            <input type="text" id="obs-bateria" placeholder="NOTAS TÉCNICAS BATERÍA..." oninput="guardarChecklist()" class="w-full border-b text-[10px] focus:outline-none uppercase py-2 bg-transparent text-center font-bold">
+        </div>
+    </div>
+
+    <!-- ===== SECCIÓN III ===== -->
+    <div class="space-y-4">
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">III. Bajo el Vehículo</h2>
+
+        <!-- Amortiguadores -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="amort">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Amortiguadores</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-amort"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'amort')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Fuelles -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="fuelles">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Fuelles (Transmisión, Rótulas, Dirección)</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-fuelles"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'fuelles')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Neumáticos -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="neuma">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Neumáticos y repuesto</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-neuma"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'neuma')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Escape -->
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="escape">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Línea de Escape y Sujeciones</h3></div>
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex space-x-3">
+                        <button onclick="marcarBurbuja(this,'verde')" class="w-12 h-12 rounded-full border-2 border-green-500 text-green-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-check text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'rojo')" class="w-12 h-12 rounded-full border-2 border-red-500 text-red-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        <button onclick="marcarBurbuja(this,'amarillo')" class="w-12 h-12 rounded-full border-2 border-yellow-500 text-yellow-500 flex items-center justify-center active:scale-90 shadow-sm"><i class="fa-solid fa-triangle-exclamation text-xl"></i></button>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-escape"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'escape')">
+                        </label>
+                    </div>
+                </div>
+                <div class="relative">
+                    <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
+                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECCIÓN IV ===== -->
+    <div class="space-y-4">
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">IV. Pastillas de Freno</h2>
+
+        <!-- Frenos Delanteros -->
+        <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-4 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" data-card-id="frenos-del" id="card-frenos-del">
+            <div class="bg-red-700 text-white px-6 py-3 flex justify-between items-center">
+                <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Delanteras</h3>
+                <div class="flex flex-col items-end">
+                    <div class="photo-gallery" id="photos-frenos-del" style="max-width:120px;"></div>
+                    <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30 cursor-pointer">
+                        <i class="fa-solid fa-camera text-sm"></i>
+                        <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'frenos-del')">
+                    </label>
+                </div>
+            </div>
+            <div class="p-5">
+                <span class="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-tight">Desgaste Promedio</span>
+                <div id="group-DEL" class="flex bg-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden shadow-inner">
+                    <button onclick="updateBrake('DEL',30,this)" class="brake-btn-rect">-30%</button>
+                    <button onclick="updateBrake('DEL',40,this)" class="brake-btn-rect">40%</button>
+                    <button onclick="updateBrake('DEL',50,this)" class="brake-btn-rect">50%</button>
+                    <button onclick="updateBrake('DEL',60,this)" class="brake-btn-rect">60%</button>
+                    <button onclick="updateBrake('DEL',70,this)" class="brake-btn-rect">+70%</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Frenos Traseros -->
+        <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-8 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" data-card-id="frenos-tras" id="card-frenos-tras">
+            <div class="bg-gray-800 text-white px-6 py-3 flex justify-between items-center">
+                <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras o Balatas</h3>
+                <div class="flex flex-col items-end">
+                    <div class="photo-gallery" id="photos-frenos-tras" style="max-width:120px;"></div>
+                    <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30 cursor-pointer">
+                        <i class="fa-solid fa-camera text-sm"></i>
+                        <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'frenos-tras')">
+                    </label>
+                </div>
+            </div>
+            <div class="p-5">
+                <span class="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block tracking-tight">Desgaste Promedio</span>
+                <div id="group-TRAS" class="flex bg-gray-100 rounded-2xl border-2 border-gray-200 overflow-hidden shadow-inner">
+                    <button onclick="updateBrake('TRAS',30,this)" class="brake-btn-rect">-30%</button>
+                    <button onclick="updateBrake('TRAS',40,this)" class="brake-btn-rect">40%</button>
+                    <button onclick="updateBrake('TRAS',50,this)" class="brake-btn-rect">50%</button>
+                    <button onclick="updateBrake('TRAS',60,this)" class="brake-btn-rect">60%</button>
+                    <button onclick="updateBrake('TRAS',70,this)" class="brake-btn-rect">+70%</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SECCIÓN V ===== -->
+    <div class="space-y-4 mb-10">
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">V. Observaciones Adicionales</h2>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="V. OBSERVACIONES ADICIONALES" data-card-id="obs-adicionales">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10">
+                <h3 class="text-gray-700 font-bold text-center text-xs uppercase">Comentarios Generales del Técnico</h3>
+            </div>
+            <div class="p-4">
+                <div class="relative">
+                    <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider z-10">Notas Técnicas</span>
+                    <textarea id="notas-adicionales" oninput="guardarChecklist()" placeholder="ESCRIBA AQUÍ CUALQUIER DETALLE ADICIONAL O RECOMENDACIÓN..." class="w-full border-2 border-gray-200 rounded-2xl px-4 pt-10 pb-4 text-base bg-white/80 uppercase focus:outline-none min-h-[140px] resize-none font-bold text-gray-700 shadow-inner"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón PDF -->
+    <button onclick="generarPDF()" class="w-full bg-red-600 text-white font-black py-6 rounded-[2.5rem] shadow-2xl uppercase tracking-widest active:scale-95 transition-all mt-10 flex flex-col items-center justify-center">
+        <i class="fa-solid fa-file-pdf text-3xl mb-2"></i>
+        <span class="text-sm">FINALIZAR REGISTRO Y DESCARGAR PDF</span>
+    </button>
+
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+    /* ========== ESTADO GLOBAL ========== */
+    let tecnicoGlobal = "";
+    let photosData = {};   // { cardId: ['base64...', ...] }
+    let cardStatus = {};   // { cardId: 'verde'|'rojo'|'amarillo' }
+    let brakeData = {};    // { 'DEL': { pct: 60 }, 'TRAS': { pct: 50 } }
+    const LS_KEY = 'toyota-checklist-v5';
+
+    /* ========== INIT ========== */
+    document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('fecha').valueAsDate = new Date();
+        cargarDesdeStorage();
+    });
 
-        function selectTech(btn) { 
-            document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('chip-active')); 
-            btn.classList.add('chip-active'); 
-            tecnicoGlobal = btn.innerText;
+    /* ========== TOAST ========== */
+    function mostrarToast(msg = 'Guardado ✓') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 1800);
+    }
+
+    /* ========== NAVEGACIÓN ========== */
+    function validarYContinuar() {
+        const errorEl = document.getElementById('error-inicio');
+        const asesor = document.getElementById('asesor').value;
+        const ot = document.getElementById('ot').value.trim();
+        const fecha = document.getElementById('fecha').value;
+        const modelo = document.getElementById('modelo').value.trim();
+        const patente = document.getElementById('patente').value.trim();
+
+        if (!tecnicoGlobal || !asesor || !ot || !fecha || !modelo || !patente) {
+            errorEl.classList.remove('hidden-screen');
+            setTimeout(() => errorEl.classList.add('hidden-screen'), 3000);
+            return;
         }
+        errorEl.classList.add('hidden-screen');
+        cambiarPantalla('checklist');
+    }
 
-        function cambiarPantalla(p) { 
-            if(p === 'checklist') { 
-                const btn = document.getElementById('btn-iniciar');
-                const aviso = document.getElementById('aviso-deslizar');
-                document.getElementById('label-patente').innerText = document.getElementById('patente').value || '---'; 
-                btn.classList.add('hidden-screen');
-                aviso.classList.remove('hidden-screen');
-                document.getElementById('pantalla-checklist').classList.remove('hidden-screen'); 
-                window.scrollTo(0,0);
-            } else { 
-                document.getElementById('pantalla-checklist').classList.add('hidden-screen'); 
-                document.getElementById('pantalla-inicio').classList.remove('hidden-screen'); 
-                document.getElementById('btn-iniciar').classList.remove('hidden-screen');
-                document.getElementById('aviso-deslizar').classList.add('hidden-screen');
-            } 
+    function cambiarPantalla(p) {
+        if (p === 'checklist') {
+            const btn = document.getElementById('btn-iniciar');
+            const aviso = document.getElementById('aviso-deslizar');
+            document.getElementById('label-patente').innerText = document.getElementById('patente').value || '---';
+            btn.classList.add('hidden-screen');
+            aviso.classList.remove('hidden-screen');
+            document.getElementById('pantalla-checklist').classList.remove('hidden-screen');
+            window.scrollTo(0, 0);
+        } else {
+            document.getElementById('pantalla-checklist').classList.add('hidden-screen');
+            document.getElementById('pantalla-inicio').classList.remove('hidden-screen');
+            document.getElementById('btn-iniciar').classList.remove('hidden-screen');
+            document.getElementById('aviso-deslizar').classList.add('hidden-screen');
         }
+    }
 
-        function previewFile(input, previewId) {
-            const preview = document.getElementById(previewId);
-            const file = input.files[0];
+    /* ========== SELECCIÓN TÉCNICO ========== */
+    function selectTech(btn) {
+        document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('chip-active'));
+        btn.classList.add('chip-active');
+        tecnicoGlobal = btn.innerText;
+        guardarFormulario();
+    }
+
+    /* ========== FOTOS ========== */
+    function addPhotos(input, cardId) {
+        if (!photosData[cardId]) photosData[cardId] = [];
+        const files = Array.from(input.files);
+        let processed = 0;
+        files.forEach(file => {
             const reader = new FileReader();
-            reader.onloadend = () => { preview.src = reader.result; preview.style.display = 'block'; }
-            if (file) reader.readAsDataURL(file);
+            reader.onloadend = () => {
+                photosData[cardId].push(reader.result);
+                renderGallery(cardId);
+                processed++;
+                if (processed === files.length) guardarChecklist();
+            };
+            reader.readAsDataURL(file);
+        });
+        input.value = '';
+    }
+
+    function renderGallery(cardId) {
+        const container = document.getElementById('photos-' + cardId);
+        if (!container) return;
+        container.innerHTML = '';
+        (photosData[cardId] || []).forEach((src, idx) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'photo-thumb-wrap';
+            wrap.innerHTML = `
+                <img src="${src}" class="photo-thumb">
+                <button class="photo-thumb-del" onclick="removePhoto('${cardId}', ${idx})">×</button>
+            `;
+            container.appendChild(wrap);
+        });
+    }
+
+    function removePhoto(cardId, idx) {
+        photosData[cardId].splice(idx, 1);
+        renderGallery(cardId);
+        guardarChecklist();
+    }
+
+    /* ========== ESTADOS DE TARJETA ========== */
+    function marcarBurbuja(btn, color) {
+        const card = btn.closest('.card-inspeccion');
+        const cardId = card.getAttribute('data-card-id');
+        card.setAttribute('data-status', color);
+        cardStatus[cardId] = color;
+        aplicarColorTarjeta(card, color);
+        guardarChecklist();
+    }
+
+    function aplicarColorTarjeta(card, color) {
+        card.classList.remove(
+            'bg-green-100','border-green-500',
+            'bg-red-100','border-red-500',
+            'bg-yellow-100','border-yellow-500',
+            'bg-green-50','bg-red-50','bg-yellow-50',
+            'border-gray-300'
+        );
+        if (color === 'verde') card.classList.add('bg-green-100', 'border-green-500');
+        else if (color === 'rojo') card.classList.add('bg-red-100', 'border-red-500');
+        else if (color === 'amarillo') card.classList.add('bg-yellow-100', 'border-yellow-500');
+        else card.classList.add('border-gray-300');
+    }
+
+    /* ========== FRENOS ========== */
+    function updateBrake(ruedaId, porcentaje, btn) {
+        const card = btn.closest('.card-inspeccion');
+        const cardId = card.getAttribute('data-card-id');
+        const group = btn.parentElement;
+
+        group.querySelectorAll('button').forEach(b =>
+            b.classList.remove('brake-selected-red', 'brake-selected-yellow', 'brake-selected-green')
+        );
+
+        let color = 'verde';
+        let btnClass = 'brake-selected-green';
+        if (porcentaje <= 30) { color = 'rojo'; btnClass = 'brake-selected-red'; }
+        else if (porcentaje <= 50) { color = 'amarillo'; btnClass = 'brake-selected-yellow'; }
+
+        btn.classList.add(btnClass);
+        card.setAttribute('data-status', color);
+        card.setAttribute('data-obs', 'Promedio: ' + porcentaje + '%');
+        cardStatus[cardId] = color;
+        brakeData[ruedaId] = { pct: porcentaje };
+
+        card.classList.remove('bg-green-50','bg-red-50','bg-yellow-50','border-green-500','border-red-500','border-yellow-500','border-gray-300');
+        if (color === 'verde') card.classList.add('bg-green-50', 'border-green-500');
+        else if (color === 'amarillo') card.classList.add('bg-yellow-50', 'border-yellow-500');
+        else card.classList.add('bg-red-50', 'border-red-500');
+
+        guardarChecklist();
+    }
+
+    /* ========== BATERÍA ========== */
+    function evaluarBateria(soh) {
+        const p = document.getElementById('alerta-bateria');
+        const card = document.getElementById('card-bateria');
+        card.classList.remove('bg-green-100','border-green-500','bg-red-100','border-red-500','bg-yellow-100','border-yellow-500','border-gray-300');
+
+        if (!soh || soh === '') {
+            p.innerText = 'Ingrese SOH para evaluar';
+            card.removeAttribute('data-status');
+            cardStatus['bateria'] = null;
+            card.classList.add('border-gray-300');
+            guardarChecklist();
+            return;
         }
-
-        function marcarBurbuja(btn, color) { 
-            const card = btn.closest('.card-inspeccion'); 
-            card.setAttribute('data-status', color); 
-            card.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'bg-yellow-100', 'border-yellow-500'); 
-            if (color === 'verde') card.classList.add('bg-green-100', 'border-green-500'); 
-            else if (color === 'rojo') card.classList.add('bg-red-100', 'border-red-500'); 
-            else if (color === 'amarillo') card.classList.add('bg-yellow-100', 'border-yellow-500'); 
+        const valor = parseInt(soh);
+        if (valor >= 80) {
+            p.innerText = '✔ Buen Estado (' + valor + '%)';
+            card.setAttribute('data-status', 'verde');
+            cardStatus['bateria'] = 'verde';
+            card.classList.add('bg-green-100', 'border-green-500');
+        } else if (valor >= 60) {
+            p.innerText = '! Cambio Preventivo (' + valor + '%)';
+            card.setAttribute('data-status', 'amarillo');
+            cardStatus['bateria'] = 'amarillo';
+            card.classList.add('bg-yellow-100', 'border-yellow-500');
+        } else {
+            p.innerText = '✖ Cambio Urgente (' + valor + '%)';
+            card.setAttribute('data-status', 'rojo');
+            cardStatus['bateria'] = 'rojo';
+            card.classList.add('bg-red-100', 'border-red-500');
         }
+        guardarChecklist();
+    }
 
-        /* FUNCIÓN DE FRENOS ACTUALIZADA PARA BURBUJA RECTANGULAR */
-        function updateBrake(ruedaId, porcentaje, btn) { 
-            const card = btn.closest('.card-inspeccion');
-            const group = btn.parentElement; 
-            
-            // Limpiar estados previos de los botones
-            group.querySelectorAll('button').forEach(b => {
-                b.classList.remove('brake-selected-red', 'brake-selected-yellow', 'brake-selected-green');
-            });
+    /* ========== LOCAL STORAGE ========== */
+    function guardarFormulario() {
+        const data = cargarDataCompleta();
+        guardarData(data);
+    }
 
-            let color = "verde";
-            let btnClass = "brake-selected-green";
+    function guardarChecklist() {
+        const data = cargarDataCompleta();
+        guardarData(data);
+        mostrarToast('Guardado ✓');
+    }
 
-            if (porcentaje <= 30) { 
-                color = "rojo";
-                btnClass = "brake-selected-red";
-            } else if (porcentaje <= 50) { 
-                color = "amarillo";
-                btnClass = "brake-selected-yellow";
+    function cargarDataCompleta() {
+        const obsMap = {};
+        document.querySelectorAll('.card-inspeccion[data-card-id]').forEach(card => {
+            const id = card.getAttribute('data-card-id');
+            const input = card.querySelector('.obs-input');
+            if (input) obsMap[id] = input.value;
+        });
+
+        return {
+            tecnico: tecnicoGlobal,
+            asesor: document.getElementById('asesor').value,
+            ot: document.getElementById('ot').value,
+            fecha: document.getElementById('fecha').value,
+            modelo: document.getElementById('modelo').value,
+            patente: document.getElementById('patente').value,
+            cardStatus: cardStatus,
+            cardObs: obsMap,
+            photos: photosData,
+            bateria: {
+                voltaje: document.getElementById('input-voltaje')?.value || '',
+                soh: document.getElementById('input-soh')?.value || '',
+                obs: document.getElementById('obs-bateria')?.value || ''
+            },
+            brakeData: brakeData,
+            notasAdicionales: document.getElementById('notas-adicionales')?.value || ''
+        };
+    }
+
+    function guardarData(data) {
+        try {
+            // Guardar sin fotos primero (datos ligeros)
+            const sinFotos = { ...data, photos: {} };
+            localStorage.setItem(LS_KEY + '_meta', JSON.stringify(sinFotos));
+            // Guardar fotos separado
+            localStorage.setItem(LS_KEY + '_photos', JSON.stringify(photosData));
+        } catch (e) {
+            mostrarToast('⚠ Almacenamiento lleno');
+        }
+    }
+
+    function cargarDesdeStorage() {
+        try {
+            const meta = localStorage.getItem(LS_KEY + '_meta');
+            const fotosRaw = localStorage.getItem(LS_KEY + '_photos');
+            if (!meta) return;
+
+            const data = JSON.parse(meta);
+
+            // Formulario inicio
+            if (data.tecnico) {
+                document.querySelectorAll('.tech-chip').forEach(btn => {
+                    if (btn.innerText.trim() === data.tecnico) {
+                        btn.classList.add('chip-active');
+                        tecnicoGlobal = data.tecnico;
+                    }
+                });
+            }
+            if (data.asesor) document.getElementById('asesor').value = data.asesor;
+            if (data.ot) document.getElementById('ot').value = data.ot;
+            if (data.fecha) document.getElementById('fecha').value = data.fecha;
+            if (data.modelo) document.getElementById('modelo').value = data.modelo;
+            if (data.patente) document.getElementById('patente').value = data.patente;
+
+            // Estados de tarjetas
+            if (data.cardStatus) {
+                cardStatus = data.cardStatus;
+                Object.entries(cardStatus).forEach(([id, status]) => {
+                    if (!status) return;
+                    const card = document.querySelector(`[data-card-id="${id}"]`);
+                    if (card) {
+                        card.setAttribute('data-status', status);
+                        aplicarColorTarjeta(card, status);
+                    }
+                });
             }
 
-            // Aplicar selección
-            btn.classList.add(btnClass);
-            card.setAttribute('data-status', color); 
-            card.setAttribute('data-obs', 'Promedio: ' + porcentaje + '%');
+            // Observaciones
+            if (data.cardObs) {
+                Object.entries(data.cardObs).forEach(([id, obs]) => {
+                    const card = document.querySelector(`[data-card-id="${id}"]`);
+                    if (card) {
+                        const input = card.querySelector('.obs-input');
+                        if (input) input.value = obs;
+                    }
+                });
+            }
 
-            // Feedback visual en la tarjeta
-            card.classList.remove('bg-green-50', 'bg-red-50', 'bg-yellow-50', 'border-green-500', 'border-red-500', 'border-yellow-500', 'border-gray-300');
-            if(color === "verde") card.classList.add('bg-green-50', 'border-green-500');
-            else if(color === "amarillo") card.classList.add('bg-yellow-50', 'border-yellow-500');
-            else card.classList.add('bg-red-50', 'border-red-500');
+            // Batería
+            if (data.bateria) {
+                const voltEl = document.getElementById('input-voltaje');
+                if (voltEl) voltEl.value = data.bateria.voltaje;
+                const sohEl = document.getElementById('input-soh');
+                if (sohEl && data.bateria.soh) {
+                    sohEl.value = data.bateria.soh;
+                    evaluarBateria(data.bateria.soh);
+                }
+                const obsEl = document.getElementById('obs-bateria');
+                if (obsEl) obsEl.value = data.bateria.obs;
+            }
+
+            // Frenos
+            if (data.brakeData) {
+                brakeData = data.brakeData;
+                const pcts = [30, 40, 50, 60, 70];
+                ['DEL', 'TRAS'].forEach(rueda => {
+                    if (!brakeData[rueda]) return;
+                    const group = document.getElementById('group-' + rueda);
+                    if (!group) return;
+                    const btns = group.querySelectorAll('button');
+                    pcts.forEach((p, i) => {
+                        if (p === brakeData[rueda].pct) {
+                            updateBrake(rueda, p, btns[i]);
+                        }
+                    });
+                });
+            }
+
+            // Notas adicionales
+            if (data.notasAdicionales) {
+                const el = document.getElementById('notas-adicionales');
+                if (el) el.value = data.notasAdicionales;
+            }
+
+            // Fotos
+            if (fotosRaw) {
+                photosData = JSON.parse(fotosRaw);
+                Object.keys(photosData).forEach(cardId => renderGallery(cardId));
+            }
+
+        } catch (e) {
+            console.warn('Error cargando datos:', e);
         }
+    }
 
-        function evaluarBateria(soh) { 
-    const p = document.getElementById('alerta-bateria'); 
-    const card = document.getElementById('card-bateria'); 
-    
-    // Limpiamos colores previos
-    card.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'bg-yellow-100', 'border-yellow-500', 'border-gray-300');
+    /* ========== RESET ========== */
+    function confirmarReset() {
+        if (!confirm('¿Deseas limpiar todo el registro actual?\n\nEsta acción no se puede deshacer.')) return;
+        resetChecklist();
+    }
 
-    if(!soh || soh === "") { 
-        p.innerText = "Ingrese SOH para evaluar"; 
-        card.removeAttribute('data-status'); 
-        card.classList.add('border-gray-300'); // Color neutro original
-        return; 
-    } 
+    function resetChecklist() {
+        localStorage.removeItem(LS_KEY + '_meta');
+        localStorage.removeItem(LS_KEY + '_photos');
 
-    const valor = parseInt(soh);
+        tecnicoGlobal = '';
+        photosData = {};
+        cardStatus = {};
+        brakeData = {};
 
-    if(valor >= 80) { 
-        p.innerText = "🟢 Buen Estado"; 
-        card.setAttribute('data-status', 'verde'); 
-        card.classList.add('bg-green-100', 'border-green-500');
-    } 
-    else if(valor >= 60) { 
-        p.innerText = "🟡 Cambio Preventivo"; 
-        card.setAttribute('data-status', 'amarillo'); 
-        card.classList.add('bg-yellow-100', 'border-yellow-500');
-    } 
-    else { 
-        p.innerText = "🔴 Cambio"; 
-        card.setAttribute('data-status', 'rojo'); 
-        card.classList.add('bg-red-100', 'border-red-500');
-    } 
-}
+        // Formulario
+        document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('chip-active'));
+        document.getElementById('asesor').value = '';
+        document.getElementById('ot').value = '';
+        document.getElementById('fecha').valueAsDate = new Date();
+        document.getElementById('modelo').value = '';
+        document.getElementById('patente').value = '';
 
-        /* MOTOR PDF ORIGINAL INTEGRADO */
-        async function generarPDF() {
-            const area1 = document.getElementById('render-area-p1');
-            const area2 = document.getElementById('render-area-p2');
-            const pat = document.getElementById('patente').value.toUpperCase() || 'S/P';
-            const ot = document.getElementById('ot').value || '---';
-            const mod = document.getElementById('modelo').value.toUpperCase() || '---';
-            const ase = document.getElementById('asesor').value || '---';
-            const fechaVal = document.getElementById('fecha').value || new Date().toLocaleDateString();
+        // Tarjetas
+        document.querySelectorAll('.card-inspeccion').forEach(card => {
+            card.removeAttribute('data-status');
+            card.removeAttribute('data-obs');
+            aplicarColorTarjeta(card, null);
+            const input = card.querySelector('.obs-input');
+            if (input) input.value = '';
+        });
 
-            let html1 = `
-                <div class="pdf-header">
-                    <div style="display: flex; flex-direction: column;">
-                        <h1 style="font-size: 38px; font-weight: 900; margin: 0; line-height: 1.2; display: block;">TOYOTA</h1>
-                        <p style="margin-top: 5px; margin-bottom: 0; font-weight: bold; letter-spacing: 2px; font-size: 12px; display: block;">CONTROL DE CALIDAD - CARTONI</p>
-                    </div>
-                    <div style="text-align: right; font-size: 14px;">
-                        <p style="margin:0; font-weight: 900;">OT: ${ot} | PATENTE: ${pat}</p>
-                        <p style="margin:0; font-weight: bold;">Modelo: ${mod}</p>
-                        <p style="margin:0; font-size:10px; opacity:0.8;">Técnico: ${tecnicoGlobal} | Asesor: ${ase} | Fecha: ${fechaVal}</p>
-                    </div>
-                </div>
-            `;
+        // Fotos
+        document.querySelectorAll('.photo-gallery').forEach(g => g.innerHTML = '');
 
-            let html2 = `
-                <div class="pdf-header" style="background:#1f2937;">
-                    <div><h1 style="font-size: 28px; font-weight: 900; margin:0;">EVIDENCIA</h1><p style="font-size:12px;">REGISTRO FOTOGRÁFICO - PATENTE ${pat}</p></div>
-                </div>
-                <div class="foto-grid">
-            `;
+        // Frenos
+        document.querySelectorAll('.brake-btn-rect').forEach(b =>
+            b.classList.remove('brake-selected-red', 'brake-selected-yellow', 'brake-selected-green')
+        );
 
-            let currentSec = "";
-            let tieneFotos = false;
-            const tarjetas = document.querySelectorAll('[data-section]');
-            
-            tarjetas.forEach(card => {
-                const sec = card.getAttribute('data-section');
-                const tit = card.querySelector('h3').innerText;
-                const status = card.getAttribute('data-status');
-                const obsInput = card.querySelector('input[type="text"]');
-                const obsArea = card.querySelector('textarea');
-                let obs = obsInput ? obsInput.value : (obsArea ? obsArea.value : (card.getAttribute('data-obs') || ""));
-                const img = card.querySelector('.preview-img');
-                const foto = (img && img.src.startsWith('data')) ? img.src : null;
+        // Batería
+        const voltEl = document.getElementById('input-voltaje');
+        if (voltEl) voltEl.value = '';
+        const sohEl = document.getElementById('input-soh');
+        if (sohEl) sohEl.value = '';
+        const obsEl = document.getElementById('obs-bateria');
+        if (obsEl) obsEl.value = '';
+        const alertaEl = document.getElementById('alerta-bateria');
+        if (alertaEl) alertaEl.innerText = 'Ingrese SOH para evaluar';
+        const cardBat = document.getElementById('card-bateria');
+        if (cardBat) { cardBat.removeAttribute('data-status'); aplicarColorTarjeta(cardBat, null); }
 
-                if(sec !== currentSec) {
-    html1 += `<div class="pdf-section-title">${sec}</div>`;
-    
-    // ESTO ES LO ÚNICO QUE SE SUMA:
-    if (sec !== "V. OBSERVACIONES ADICIONALES") {
-    html1 += `
-        <div style="display: flex; padding: 8px 20px; background: #eeeeee; border-bottom: 2px solid #000;">
-            <div style="width: 40%;"></div>
-            <div style="width: 20%; display: flex; gap: 8px; justify-content: center;">
-                <span style="font-size: 14px; font-weight: 900; width: 14px; text-align: center; color: #000000;">✔</span>
-                <span style="font-size: 14px; font-weight: 900; width: 14px; text-align: center; color: #000000;">!</span>
-                <span style="font-size: 14px; font-weight: 900; width: 14px; text-align: center; color: #000000;">X</span>
-            </div>
-            <div style="width: 40%;"></div>
-        </div>
-    `;
-}
-    currentSec = sec;
-}
+        // Notas
+        const notas = document.getElementById('notas-adicionales');
+        if (notas) notas.value = '';
 
-                // Diseño especial para la Sección V (sin semáforo)
-                if (sec === "V. OBSERVACIONES ADICIONALES") {
-    html1 += `
-        <div style="padding: 15px 20px; border-bottom: 2px solid #000; background: white; width: 760px;">
-            <div style="font-size: 14px; color: #000000; line-height: 1.4; white-space: pre-wrap; font-weight: bold; text-align: left; word-wrap: break-word; overflow-wrap: break-word;">
-                ${obs ? obs : 'Sin comentarios adicionales.'}
-            </div>
-        </div>
-    `;
-} else {
-                    html1 += `
-                        <div class="pdf-row" style="display: flex; align-items: center; border-bottom: 1px solid #000; padding: 6px 0;">
-                            <div style="width: 40%; font-weight: bold; font-size: 11px; color: #000;">${tit}</div>
-                            <div class="pdf-dot-group" style="width: 20%; display: flex; gap: 8px; justify-content: center;">
-                                <div class="pdf-dot ${status === 'verde' ? 'dot-green' : ''}" style="border: 1px solid #000;"></div>
-                                <div class="pdf-dot ${status === 'amarillo' ? 'dot-yellow' : ''}" style="border: 1px solid #000;"></div>
-                                <div class="pdf-dot ${status === 'rojo' ? 'dot-red' : ''}" style="border: 1px solid #000;"></div>
-                            </div>
-                            <div style="width: 40%; font-size: 11px; color: #000; font-weight: bold; padding-left: 10px; border-left: 2px solid #000; word-wrap: break-word;">
-                                ${obs ? obs : ''}
-                            </div>
-                        </div>
-                    `;
+        mostrarToast('Registro limpiado ✓');
+        cambiarPantalla('inicio');
+    }
+
+    /* ========== CARGA DINÁMICA DE LIBRERÍAS PDF ========== */
+    function cargarScript(url) {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[src="${url}"]`)) { resolve(); return; }
+            const s = document.createElement('script');
+            s.src = url;
+            s.onload = resolve;
+            s.onerror = reject;
+            document.head.appendChild(s);
+        });
+    }
+
+    /* ========== GENERACIÓN PDF (puro jsPDF, sin html2canvas) ========== */
+    async function generarPDF() {
+        mostrarToast('Preparando PDF...');
+        await cargarScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+
+        const pat   = document.getElementById('patente').value.toUpperCase() || 'S/P';
+        const ot    = document.getElementById('ot').value || '---';
+        const mod   = document.getElementById('modelo').value.toUpperCase() || '---';
+        const ase   = document.getElementById('asesor').value || '---';
+        const fecha = document.getElementById('fecha').value || '';
+
+        const { jsPDF } = window.jspdf;
+        const pdf    = new jsPDF('p', 'mm', 'a4');
+        const PW     = 210;  // page width
+        const PH     = 297;  // page height
+        const M      = 12;   // margin
+        const CW     = PW - M * 2; // content width
+
+        /* ---- helpers ---- */
+        const checkPage = (y, needed = 12) => {
+            if (y + needed > PH - 10) { pdf.addPage(); return M + 4; }
+            return y;
+        };
+
+        /* ---- ENCABEZADO PÁGINA 1 ---- */
+        pdf.setFillColor(239, 68, 68);
+        pdf.rect(0, 0, PW, 34, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(26); pdf.text('TOYOTA', M, 14);
+        pdf.setFontSize(9);  pdf.setFont('helvetica', 'normal');
+        pdf.text('CONTROL DE CALIDAD - CARTONI', M, 22);
+        pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
+        pdf.text('OT: ' + ot + '   PATENTE: ' + pat, PW - M, 11, { align: 'right' });
+        pdf.setFontSize(9);  pdf.setFont('helvetica', 'normal');
+        pdf.text('Modelo: ' + mod, PW - M, 18, { align: 'right' });
+        pdf.setFontSize(7.5);
+        pdf.text('Tecnico: ' + tecnicoGlobal + '  |  Asesor: ' + ase + '  |  Fecha: ' + fecha, PW - M, 26, { align: 'right' });
+
+        let y = 40;
+
+        /* ---- TARJETAS ---- */
+        let currentSec = '';
+        const tarjetas = document.querySelectorAll('[data-section]');
+        const ROW_H = 8.5;
+        const COL_DOTS_X = M + CW * 0.56;
+        const DOT_GAP    = 6;
+        const COL_OBS_X  = M + CW * 0.74;
+        const COL_OBS_W  = CW * 0.26 - 2;
+
+        tarjetas.forEach(card => {
+            const sec    = card.getAttribute('data-section');
+            const tit    = card.querySelector('h3')?.innerText || '';
+            const status = card.getAttribute('data-status') || '';
+            const cardId = card.getAttribute('data-card-id');
+
+            /* Observación */
+            let obs = '';
+            if (cardId === 'bateria') {
+                const v = document.getElementById('input-voltaje')?.value || '';
+                const s = document.getElementById('input-soh')?.value || '';
+                const n = document.getElementById('obs-bateria')?.value || '';
+                const e = document.getElementById('alerta-bateria')?.innerText || '';
+                const p = [];
+                if (s) p.push('SOH: ' + s + '%');
+                if (e && e !== 'Ingrese SOH para evaluar') p.push(e.replace(/[✔✖!]/g,'').trim());
+                if (n) p.push(n);
+                obs = p.join(' | ');
+            } else if (cardId === 'frenos-del' || cardId === 'frenos-tras') {
+                obs = card.getAttribute('data-obs') || '';
+            } else if (cardId === 'obs-adicionales') {
+                obs = document.getElementById('notas-adicionales')?.value || '';
+            } else {
+                const inp = card.querySelector('.obs-input');
+                obs = inp ? inp.value : '';
+            }
+
+            /* Encabezado de sección */
+            if (sec !== currentSec) {
+                y = checkPage(y, 18);
+                pdf.setFillColor(31, 41, 55);
+                pdf.rect(M, y, CW, 8, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(8);
+                pdf.text(sec, M + 3, y + 5.5);
+                y += 10;
+
+                if (sec !== 'V. OBSERVACIONES ADICIONALES') {
+                    /* Cabecera de columnas */
+                    pdf.setFillColor(238, 238, 238);
+                    pdf.rect(M, y, CW, 6, 'F');
+                    pdf.setTextColor(80, 80, 80);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(7);
+                    pdf.text('ITEM', M + 2, y + 4.2);
+                    pdf.text('OK', COL_DOTS_X,           y + 4.2, { align: 'center' });
+                    pdf.text('!',  COL_DOTS_X + DOT_GAP, y + 4.2, { align: 'center' });
+                    pdf.text('X',  COL_DOTS_X + DOT_GAP * 2, y + 4.2, { align: 'center' });
+                    pdf.text('OBSERVACIONES', COL_OBS_X, y + 4.2);
+                    y += 7;
                 }
+                currentSec = sec;
+            }
 
-                if(foto) {
-                    tieneFotos = true;
-                    html2 += `<div class="foto-item"><p style="font-size:10px; font-weight:bold; margin-bottom:5px; color:#ef4444; text-transform:uppercase;">${tit}</p><img src="${foto}" class="foto-img-large"></div>`;
-                }
-            });
+            /* Fila de observaciones generales (sección V) */
+            if (sec === 'V. OBSERVACIONES ADICIONALES') {
+                y = checkPage(y, 20);
+                pdf.setTextColor(40, 40, 40);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(10.5);
+                const lines = pdf.splitTextToSize(obs || 'Sin comentarios adicionales.', CW - 4);
+                lines.forEach(line => {
+                    y = checkPage(y, 8);
+                    pdf.text(line, M + 3, y + 4);
+                    y += 7;
+                });
+                y += 5;
+                return;
+            }
 
-            html2 += `</div>`;
-            area1.innerHTML = html1;
-            area2.innerHTML = html2;
+            /* Fila normal */
+            y = checkPage(y, ROW_H + 1);
+            const even = Array.from(tarjetas).indexOf(card) % 2 === 0;
+            pdf.setFillColor(even ? 250 : 244, even ? 250 : 244, even ? 250 : 244);
+            pdf.rect(M, y, CW, ROW_H, 'F');
+            pdf.setDrawColor(220, 220, 220);
+            pdf.rect(M, y, CW, ROW_H, 'S');
 
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
+            /* Título item */
+            pdf.setTextColor(30, 30, 30);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(7.5);
+            const titW = CW * 0.54 - 4;
+            const titLines = pdf.splitTextToSize(tit, titW);
+            pdf.text(titLines[0], M + 2, y + ROW_H / 2 + 2.5);
 
-            const canvas1 = await html2canvas(area1, { scale: 2, useCORS: true });
-            pdf.addImage(canvas1.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, (canvas1.height * 210) / canvas1.width);
+            /* Puntos semáforo */
+            const dotY  = y + ROW_H / 2;
+            const dotR  = 2.2;
+            const dxV   = COL_DOTS_X;
+            const dxA   = COL_DOTS_X + DOT_GAP;
+            const dxR   = COL_DOTS_X + DOT_GAP * 2;
 
-            if(tieneFotos) {
+            pdf.setDrawColor(180, 180, 180);
+            pdf.setFillColor(status === 'verde'   ? 34  : 240, status === 'verde'   ? 197 : 240, status === 'verde'   ? 94  : 240);
+            pdf.circle(dxV, dotY, dotR, 'FD');
+            pdf.setFillColor(status === 'amarillo' ? 234 : 240, status === 'amarillo' ? 179 : 240, status === 'amarillo' ? 8   : 240);
+            pdf.circle(dxA, dotY, dotR, 'FD');
+            pdf.setFillColor(status === 'rojo'    ? 239 : 240, status === 'rojo'    ? 68  : 240, status === 'rojo'    ? 68  : 240);
+            pdf.circle(dxR, dotY, dotR, 'FD');
+
+            /* Observación */
+            if (obs) {
+                pdf.setTextColor(60, 60, 60);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(6.5);
+                const obsLines = pdf.splitTextToSize(obs.toUpperCase(), COL_OBS_W);
+                pdf.text(obsLines[0], COL_OBS_X + 1, y + ROW_H / 2 + 2.5);
+            }
+
+            y += ROW_H + 1;
+        });
+
+        /* ---- PÁGINAS DE FOTOS ---- */
+        const allPhotos = [];
+        document.querySelectorAll('[data-card-id]').forEach(card => {
+            const cardId = card.getAttribute('data-card-id');
+            const title  = card.querySelector('h3')?.innerText || cardId;
+            (photosData[cardId] || []).forEach(src => allPhotos.push({ src, title }));
+        });
+
+        if (allPhotos.length > 0) {
+            const COLS    = 2;
+            const ROWS    = 2;
+            const PPP     = COLS * ROWS;   // fotos por página
+            const photoW  = (CW - 6) / COLS;
+            const photoH  = 68;
+
+            for (let i = 0; i < allPhotos.length; i += PPP) {
                 pdf.addPage();
-                const canvas2 = await html2canvas(area2, { scale: 2, useCORS: true });
-                pdf.addImage(canvas2.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 210, (canvas2.height * 210) / canvas2.width);
-            }
 
-            pdf.save(`Checklist_Toyota_${pat}.pdf`);
-            area1.innerHTML = "";
-            area2.innerHTML = "";
+                /* Encabezado página de fotos */
+                pdf.setFillColor(31, 41, 55);
+                pdf.rect(0, 0, PW, 18, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(14); pdf.text('EVIDENCIA FOTOGRAFICA', M, 11);
+                pdf.setFontSize(8);  pdf.setFont('helvetica', 'normal');
+                pdf.text('PATENTE: ' + pat, PW - M, 11, { align: 'right' });
+
+                const chunk = allPhotos.slice(i, i + PPP);
+                chunk.forEach(({ src, title }, idx) => {
+                    const col = idx % COLS;
+                    const row = Math.floor(idx / COLS);
+                    const px  = M + col * (photoW + 6);
+                    const py  = 24 + row * (photoH + 14);
+
+                    /* Caja */
+                    pdf.setDrawColor(200, 200, 200);
+                    pdf.setFillColor(248, 248, 248);
+                    pdf.rect(px, py, photoW, photoH + 8, 'FD');
+
+                    /* Etiqueta */
+                    pdf.setTextColor(239, 68, 68);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setFontSize(7);
+                    const tl = pdf.splitTextToSize(title.toUpperCase(), photoW - 4);
+                    pdf.text(tl[0], px + 2, py + 5.5);
+
+                    /* Imagen */
+                    try {
+                        const fmt = src.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+                        pdf.addImage(src, fmt, px + 1, py + 8, photoW - 2, photoH - 1);
+                    } catch(e) { /* foto inválida, se omite */ }
+                });
+            }
         }
-    </script>
-</body>
+
+        pdf.save('Checklist_Toyota_' + pat + '.pdf');
+        mostrarToast('PDF generado ✓');
+    }
+</script>
+<script src="https://replit-cdn.com/replit-pill/replit-pill.global.js" data-repl-id="b573b859-803d-427f-9c79-e63d018bea59"></script></body>
 </html>
