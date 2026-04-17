@@ -71,6 +71,9 @@
         .foto-item { border: 1px solid #ddd; border-radius: 8px; padding: 10px; text-align: center; }
         .foto-img-large { width: 100%; height: 250px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
 
+        /* Ocultar badge de Replit */
+        #replit-badge-container, [data-replit-badge], .replit-badge { display: none !important; }
+
         /* Toast */
         #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 22px; border-radius: 2rem; font-size: 13px; font-weight: 700; z-index: 9999; transition: opacity 0.4s; opacity: 0; pointer-events: none; }
         #toast.show { opacity: 1; }
@@ -144,6 +147,11 @@
         <button id="btn-iniciar" onclick="validarYContinuar()" class="w-full bg-gray-900 text-white font-black py-5 rounded-[2rem] shadow-2xl active:scale-95 transition-all flex items-center justify-center space-x-3">
             <i class="fa-solid fa-play text-xl"></i>
             <span>INICIAR CHEQUEO</span>
+        </button>
+
+        <button onclick="confirmarReset()" class="w-full bg-gray-100 text-gray-500 font-black py-4 rounded-[2rem] active:scale-95 transition-all flex items-center justify-center space-x-2 border-2 border-gray-200">
+            <i class="fa-solid fa-rotate-left text-base"></i>
+            <span class="text-sm uppercase tracking-widest">Resetear Formulario</span>
         </button>
 
         <div id="aviso-deslizar" class="hidden-screen text-center p-5 bg-white border-2 border-red-200 rounded-2xl shadow-inner animate-ready-soft">
@@ -329,7 +337,7 @@
             <div class="flex items-start justify-between mb-4">
                 <div class="space-y-3 flex-1 pr-4">
                     <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
-                        <span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje:</span>
+                        <span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje de Carga:</span>
                         <input type="number" id="input-voltaje" step="0.1" placeholder="0.0" oninput="guardarChecklist()" class="w-full bg-transparent font-black focus:outline-none text-gray-700">
                     </div>
                     <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
@@ -346,7 +354,6 @@
                 </div>
             </div>
             <p id="alerta-bateria" class="text-[10px] font-black mb-1 text-gray-400 text-center uppercase italic">Ingrese SOH para evaluar</p>
-            <input type="text" id="obs-bateria" placeholder="NOTAS TÉCNICAS BATERÍA..." oninput="guardarChecklist()" class="w-full border-b text-[10px] focus:outline-none uppercase py-2 bg-transparent text-center font-bold">
         </div>
     </div>
 
@@ -756,8 +763,7 @@
             photos: photosData,
             bateria: {
                 voltaje: document.getElementById('input-voltaje')?.value || '',
-                soh: document.getElementById('input-soh')?.value || '',
-                obs: document.getElementById('obs-bateria')?.value || ''
+                soh: document.getElementById('input-soh')?.value || ''
             },
             brakeData: brakeData,
             notasAdicionales: document.getElementById('notas-adicionales')?.value || ''
@@ -832,8 +838,6 @@
                     sohEl.value = data.bateria.soh;
                     evaluarBateria(data.bateria.soh);
                 }
-                const obsEl = document.getElementById('obs-bateria');
-                if (obsEl) obsEl.value = data.bateria.obs;
             }
 
             // Frenos
@@ -915,8 +919,6 @@
         if (voltEl) voltEl.value = '';
         const sohEl = document.getElementById('input-soh');
         if (sohEl) sohEl.value = '';
-        const obsEl = document.getElementById('obs-bateria');
-        if (obsEl) obsEl.value = '';
         const alertaEl = document.getElementById('alerta-bateria');
         if (alertaEl) alertaEl.innerText = 'Ingrese SOH para evaluar';
         const cardBat = document.getElementById('card-bateria');
@@ -987,10 +989,10 @@
         let currentSec = '';
         const tarjetas = document.querySelectorAll('[data-section]');
         const ROW_H = 8.5;
-        const COL_DOTS_X = M + CW * 0.56;
+        const COL_DOTS_X = M + CW * 0.48;
         const DOT_GAP    = 6;
-        const COL_OBS_X  = M + CW * 0.74;
-        const COL_OBS_W  = CW * 0.26 - 2;
+        const COL_OBS_X  = M + CW * 0.63;
+        const COL_OBS_W  = CW * 0.37 - 2;
 
         tarjetas.forEach(card => {
             const sec    = card.getAttribute('data-section');
@@ -1003,12 +1005,11 @@
             if (cardId === 'bateria') {
                 const v = document.getElementById('input-voltaje')?.value || '';
                 const s = document.getElementById('input-soh')?.value || '';
-                const n = document.getElementById('obs-bateria')?.value || '';
                 const e = document.getElementById('alerta-bateria')?.innerText || '';
                 const p = [];
+                if (v) p.push('Voltaje Carga: ' + v + 'v');
                 if (s) p.push('SOH: ' + s + '%');
-                if (e && e !== 'Ingrese SOH para evaluar') p.push(e.replace(/[✔✖!]/g,'').trim());
-                if (n) p.push(n);
+                if (e && e !== 'Ingrese SOH para evaluar') p.push(e.replace(/[✔✖!]/g,'').replace(/\s*\(\d+%\)\s*/,'').trim());
                 obs = p.join(' | ');
             } else if (cardId === 'frenos-del' || cardId === 'frenos-tras') {
                 obs = card.getAttribute('data-obs') || '';
@@ -1037,7 +1038,6 @@
                     pdf.setTextColor(80, 80, 80);
                     pdf.setFont('helvetica', 'bold');
                     pdf.setFontSize(7);
-                    pdf.text('ITEM', M + 2, y + 4.2);
                     pdf.text('OK', COL_DOTS_X,           y + 4.2, { align: 'center' });
                     pdf.text('!',  COL_DOTS_X + DOT_GAP, y + 4.2, { align: 'center' });
                     pdf.text('X',  COL_DOTS_X + DOT_GAP * 2, y + 4.2, { align: 'center' });
@@ -1049,17 +1049,18 @@
 
             /* Fila de observaciones generales (sección V) */
             if (sec === 'V. OBSERVACIONES ADICIONALES') {
-                y = checkPage(y, 20);
+                y += 6; /* espacio extra entre título y texto */
+                y = checkPage(y, 14);
                 pdf.setTextColor(40, 40, 40);
                 pdf.setFont('helvetica', 'normal');
-                pdf.setFontSize(10.5);
+                pdf.setFontSize(11);
                 const lines = pdf.splitTextToSize(obs || 'Sin comentarios adicionales.', CW - 4);
                 lines.forEach(line => {
                     y = checkPage(y, 8);
-                    pdf.text(line, M + 3, y + 4);
+                    pdf.text(line, M + 2, y);
                     y += 7;
                 });
-                y += 5;
+                y += 3;
                 return;
             }
 
@@ -1075,7 +1076,7 @@
             pdf.setTextColor(30, 30, 30);
             pdf.setFont('helvetica', 'bold');
             pdf.setFontSize(7.5);
-            const titW = CW * 0.54 - 4;
+            const titW = CW * 0.46 - 4;
             const titLines = pdf.splitTextToSize(tit, titW);
             pdf.text(titLines[0], M + 2, y + ROW_H / 2 + 2.5);
 
@@ -1165,5 +1166,5 @@
         mostrarToast('PDF generado ✓');
     }
 </script>
-<script src="https://replit-cdn.com/replit-pill/replit-pill.global.js" data-repl-id="b573b859-803d-427f-9c79-e63d018bea59"></script></body>
+<script></script></body>
 </html>
