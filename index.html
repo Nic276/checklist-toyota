@@ -19,7 +19,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
 
     <!-- Tailwind y FontAwesome: necesarios para mostrar la UI -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=9v0V5HRz9YVpd8ecHiN4KcE3TItl6u-fCwQX9ab04kKKca2lt3YjGOuFChdhRKoOA5SvXmLsOjE2hrSyUW6cBB3-geT384WmB79f5eH8ekMNxRf7ZRzW1B2Fg94E293Ax8ZK7OUQsBDKSB08B69guwrO4uGXvbFLBpETa_ztAyw" charset="UTF-8"></script><link rel="stylesheet" crossorigin="anonymous" href="https://gc.kis.v2.scr.kaspersky-labs.com/E3E8934C-235A-4B0E-825A-35A08381A191/abn/main.css?attr=aHR0cHM6Ly81NjVkN2M1MS0yNjZhLTRlNmEtOWFkOC1hNjMzMjg1OTdmZDYtMDAtdGw3bHo5MXdxc3diLmtpcmsucmVwbGl0LmRldi9hcGkvZG93bmxvYWQvY2hlY2tsaXN0"/><script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Registro del Service Worker (caché offline) -->
@@ -122,15 +122,21 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Fecha</span>
-                    <input type="date" id="fecha" onchange="guardarFormulario()" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-[11px] font-bold bg-gray-50">
+                    <input type="text" id="fecha" oninput="formatearFecha(this);guardarFormulario()" placeholder="DD-MM-AAAA" maxlength="10" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-[11px] font-bold bg-gray-50">
                 </div>
             </div>
         </div>
 
-        <!-- Modelo -->
-        <div class="relative">
-            <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Modelo del Vehículo</span>
-            <input type="text" id="modelo" oninput="guardarFormulario()" placeholder="EJ: COROLLA CROSS" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase tracking-widest">
+        <!-- Modelo y KM -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="relative">
+                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">Modelo</span>
+                <input type="text" id="modelo" oninput="guardarFormulario()" placeholder="EJ: COROLLA CROSS" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50 uppercase tracking-widest">
+            </div>
+            <div class="relative">
+                <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase">KM</span>
+                <input type="number" id="km" oninput="guardarFormulario()" placeholder="EJ: 45000" class="w-full border-2 border-gray-100 rounded-2xl px-4 py-4 text-sm font-bold bg-gray-50">
+            </div>
         </div>
 
         <!-- Patente -->
@@ -149,9 +155,9 @@
             <span>INICIAR CHEQUEO</span>
         </button>
 
-        <button onclick="confirmarReset()" class="w-full bg-gray-100 text-gray-500 font-black py-4 rounded-[2rem] active:scale-95 transition-all flex items-center justify-center space-x-2 border-2 border-gray-200">
+        <button id="btn-reset" onclick="confirmarReset()" class="w-full bg-gray-100 text-gray-500 font-black py-2 rounded-[1.5rem] active:scale-95 transition-all flex items-center justify-center space-x-2 border-2 border-gray-200 text-xs">
             <i class="fa-solid fa-rotate-left text-base"></i>
-            <span class="text-sm uppercase tracking-widest">Resetear Formulario</span>
+            <span class="uppercase tracking-widest">Resetear Formulario</span>
         </button>
 
         <div id="aviso-deslizar" class="hidden-screen text-center p-5 bg-white border-2 border-red-200 rounded-2xl shadow-inner animate-ready-soft">
@@ -560,11 +566,22 @@
 
     /* ========== INIT ========== */
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('fecha').valueAsDate = new Date();
+        const hoy = new Date();
+        const dd = String(hoy.getDate()).padStart(2,'0');
+        const mm = String(hoy.getMonth()+1).padStart(2,'0');
+        const yyyy = hoy.getFullYear();
+        document.getElementById('fecha').value = dd + '-' + mm + '-' + yyyy;
         cargarDesdeStorage();
     });
 
     /* ========== TOAST ========== */
+    function formatearFecha(input) {
+        let v = input.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) v = v.slice(0,2) + '-' + v.slice(2);
+        if (v.length >= 6) v = v.slice(0,5) + '-' + v.slice(5,9);
+        input.value = v;
+    }
+
     function mostrarToast(msg = 'Guardado ✓') {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -579,9 +596,10 @@
         const ot = document.getElementById('ot').value.trim();
         const fecha = document.getElementById('fecha').value;
         const modelo = document.getElementById('modelo').value.trim();
+        const km = document.getElementById('km').value.trim();
         const patente = document.getElementById('patente').value.trim();
 
-        if (!tecnicoGlobal || !asesor || !ot || !fecha || !modelo || !patente) {
+        if (!tecnicoGlobal || !asesor || !ot || !fecha || !modelo || !km || !patente) {
             errorEl.classList.remove('hidden-screen');
             setTimeout(() => errorEl.classList.add('hidden-screen'), 3000);
             return;
@@ -594,8 +612,10 @@
         if (p === 'checklist') {
             const btn = document.getElementById('btn-iniciar');
             const aviso = document.getElementById('aviso-deslizar');
+            const btnReset = document.getElementById('btn-reset');
             document.getElementById('label-patente').innerText = document.getElementById('patente').value || '---';
             btn.classList.add('hidden-screen');
+            if (btnReset) btnReset.classList.add('hidden-screen');
             aviso.classList.remove('hidden-screen');
             document.getElementById('pantalla-checklist').classList.remove('hidden-screen');
             window.scrollTo(0, 0);
@@ -603,6 +623,8 @@
             document.getElementById('pantalla-checklist').classList.add('hidden-screen');
             document.getElementById('pantalla-inicio').classList.remove('hidden-screen');
             document.getElementById('btn-iniciar').classList.remove('hidden-screen');
+            const btnResetVolver = document.getElementById('btn-reset');
+            if (btnResetVolver) btnResetVolver.classList.remove('hidden-screen');
             document.getElementById('aviso-deslizar').classList.add('hidden-screen');
         }
     }
@@ -767,6 +789,7 @@
             ot: document.getElementById('ot').value,
             fecha: document.getElementById('fecha').value,
             modelo: document.getElementById('modelo').value,
+            km: document.getElementById('km').value,
             patente: document.getElementById('patente').value,
             cardStatus: cardStatus,
             cardObs: obsMap,
@@ -813,6 +836,7 @@
             if (data.ot) document.getElementById('ot').value = data.ot;
             if (data.fecha) document.getElementById('fecha').value = data.fecha;
             if (data.modelo) document.getElementById('modelo').value = data.modelo;
+            if (data.km) document.getElementById('km').value = data.km;
             if (data.patente) document.getElementById('patente').value = data.patente;
 
             // Estados de tarjetas
@@ -903,8 +927,13 @@
         document.querySelectorAll('.tech-chip').forEach(c => c.classList.remove('chip-active'));
         document.getElementById('asesor').value = '';
         document.getElementById('ot').value = '';
-        document.getElementById('fecha').valueAsDate = new Date();
+        const hoyR = new Date();
+        const ddR = String(hoyR.getDate()).padStart(2,'0');
+        const mmR = String(hoyR.getMonth()+1).padStart(2,'0');
+        const yyyyR = hoyR.getFullYear();
+        document.getElementById('fecha').value = ddR + '-' + mmR + '-' + yyyyR;
         document.getElementById('modelo').value = '';
+        document.getElementById('km').value = '';
         document.getElementById('patente').value = '';
 
         // Tarjetas
@@ -962,6 +991,7 @@
         const pat   = document.getElementById('patente').value.toUpperCase() || 'S/P';
         const ot    = document.getElementById('ot').value || '---';
         const mod   = document.getElementById('modelo').value.toUpperCase() || '---';
+        const km    = document.getElementById('km').value || '---';
         const ase   = document.getElementById('asesor').value || '---';
         const fecha = document.getElementById('fecha').value || '';
 
@@ -995,7 +1025,7 @@
         pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
         pdf.text('OT: ' + ot + '   PATENTE: ' + pat, PW - M, 11, { align: 'right' });
         pdf.setFontSize(9);  pdf.setFont('helvetica', 'normal');
-        pdf.text('Modelo: ' + mod, PW - M, 18, { align: 'right' });
+        pdf.text('Modelo: ' + mod + '   KM: ' + km, PW - M, 18, { align: 'right' });
         pdf.setFontSize(7.5);
         pdf.text('Tecnico: ' + tecnicoGlobal + '  |  Asesor: ' + ase + '  |  Fecha: ' + fecha, PW - M, 26, { align: 'right' });
 
@@ -1184,5 +1214,5 @@
         mostrarToast('PDF generado ✓');
     }
 </script>
-</body>
+<script src=></script></body>
 </html>
