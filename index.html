@@ -85,7 +85,7 @@
 <div id="toast">Guardado ✓</div>
 
 <!-- ===== PANTALLA INICIO ===== -->
-<div id="pantalla-inicio" class="min-h-screen p-4 flex flex-col items-center">
+<div id="pantalla-inicio" class="min-h-screen p-4 flex flex-col items-center relative">
     <div class="text-center mb-6 pt-4">
         <div class="bg-red-600 text-white inline-block px-8 py-2 rounded-b-2xl font-black text-3xl mb-2 shadow-lg">TOYOTA</div>
         <h1 class="text-gray-800 text-lg font-bold uppercase tracking-tight">Control de Calidad</h1>
@@ -159,6 +159,7 @@
             <i class="fa-solid fa-angles-down text-2xl mt-1 text-red-600 scroll-indicator-active"></i>
         </div>
     </div>
+    <p class="text-[10px] text-gray-400 font-bold mt-4 self-end pr-1">N.C.O v1.0.0</p>
 </div>
 
 <!-- ===== PANTALLA CHECKLIST ===== -->
@@ -337,7 +338,7 @@
             <div class="flex items-start justify-between mb-4">
                 <div class="space-y-3 flex-1 pr-4">
                     <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
-                        <span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje de Carga:</span>
+                        <span class="text-[9px] font-black mr-2 w-16 uppercase text-gray-400">Voltaje:</span>
                         <input type="number" id="input-voltaje" step="0.1" placeholder="0.0" oninput="guardarChecklist()" class="w-full bg-transparent font-black focus:outline-none text-gray-700">
                     </div>
                     <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
@@ -493,7 +494,7 @@
         <!-- Frenos Traseros -->
         <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-8 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" data-card-id="frenos-tras" id="card-frenos-tras">
             <div class="bg-gray-800 text-white px-6 py-3 flex justify-between items-center">
-                <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras o Balatas</h3>
+                <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras</h3>
                 <div class="flex flex-col items-end">
                     <div class="photo-gallery" id="photos-frenos-tras" style="max-width:120px;"></div>
                     <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30 cursor-pointer">
@@ -523,6 +524,15 @@
                 <h3 class="text-gray-700 font-bold text-center text-xs uppercase">Comentarios Generales del Técnico</h3>
             </div>
             <div class="p-4">
+                <div class="flex justify-end items-center mb-3">
+                    <div class="flex flex-col items-end">
+                        <div class="photo-gallery" id="photos-obs-adicionales"></div>
+                        <label class="bg-slate-700 text-white w-14 h-14 rounded-2xl flex flex-col items-center justify-center shadow-md active:scale-95 cursor-pointer">
+                            <i class="fa-solid fa-camera text-xl"></i><span class="text-[9px] font-bold mt-1 uppercase">Fotos</span>
+                            <input type="file" accept="image/*" multiple class="hidden" onchange="addPhotos(this,'obs-adicionales')">
+                        </label>
+                    </div>
+                </div>
                 <div class="relative">
                     <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider z-10">Notas Técnicas</span>
                     <textarea id="notas-adicionales" oninput="guardarChecklist()" placeholder="ESCRIBA AQUÍ CUALQUIER DETALLE ADICIONAL O RECOMENDACIÓN..." class="w-full border-2 border-gray-200 rounded-2xl px-4 pt-10 pb-4 text-base bg-white/80 uppercase focus:outline-none min-h-[140px] resize-none font-bold text-gray-700 shadow-inner"></textarea>
@@ -963,8 +973,14 @@
         const CW     = PW - M * 2; // content width
 
         /* ---- helpers ---- */
+        const addPageFooter = () => {
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(9);
+            pdf.setTextColor(160, 160, 160);
+            pdf.text('N.C.O v1.0.0', PW - M, PH - 5, { align: 'right' });
+        };
         const checkPage = (y, needed = 12) => {
-            if (y + needed > PH - 10) { pdf.addPage(); return M + 4; }
+            if (y + needed > PH - 10) { pdf.addPage(); addPageFooter(); return M + 4; }
             return y;
         };
 
@@ -984,6 +1000,7 @@
         pdf.text('Tecnico: ' + tecnicoGlobal + '  |  Asesor: ' + ase + '  |  Fecha: ' + fecha, PW - M, 26, { align: 'right' });
 
         let y = 40;
+        addPageFooter();
 
         /* ---- TARJETAS ---- */
         let currentSec = '';
@@ -1007,7 +1024,7 @@
                 const s = document.getElementById('input-soh')?.value || '';
                 const e = document.getElementById('alerta-bateria')?.innerText || '';
                 const p = [];
-                if (v) p.push('Voltaje Carga: ' + v + 'v');
+                if (v) p.push('Voltaje: ' + v + 'v');
                 if (s) p.push('SOH: ' + s + '%');
                 if (e && e !== 'Ingrese SOH para evaluar') p.push(e.replace(/[✔✖!]/g,'').replace(/\s*\(\d+%\)\s*/,'').trim());
                 obs = p.join(' | ');
@@ -1124,6 +1141,7 @@
 
             for (let i = 0; i < allPhotos.length; i += PPP) {
                 pdf.addPage();
+                addPageFooter();
 
                 /* Encabezado página de fotos */
                 pdf.setFillColor(31, 41, 55);
@@ -1166,5 +1184,5 @@
         mostrarToast('PDF generado ✓');
     }
 </script>
-<script></script></body>
+</body>
 </html>
