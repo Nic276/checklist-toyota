@@ -181,11 +181,11 @@
 
     <!-- ===== SECCIÓN I ===== -->
     <div class="space-y-4">
-        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">I. Dentro del Vehículo</h2>
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">I. INTERIOR</h2>
 
         <!-- Luces y Bocina -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="luces">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Luces y Bocina</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. INTERIOR" data-card-id="luces">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Luces y Bocina</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -203,14 +203,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Plumillas -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="plumillas">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de plumillas y funcionamiento</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. INTERIOR" data-card-id="plumillas">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Limpiaparabrisas y Plumillas</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -228,14 +228,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- A/C y Calefacción -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="ac">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de A/C y Calefacción</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. INTERIOR" data-card-id="ac">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">A/C y Calefacción</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -253,13 +253,13 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Alzavidrios -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. DENTRO DEL VEHÍCULO" data-card-id="centralizado">
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="I. INTERIOR" data-card-id="centralizado">
             <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Alzavidrios y Cierre Centralizado</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
@@ -278,7 +278,7 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
@@ -286,11 +286,11 @@
 
     <!-- ===== SECCIÓN II ===== -->
     <div class="space-y-4">
-        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">II. Compartimiento Motor</h2>
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">II. MOTOR</h2>
 
         <!-- Fugas y Correas -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR" data-card-id="fugas">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Inspección visual de fugas y correas</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. MOTOR" data-card-id="fugas">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Fugas y Correas</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -308,14 +308,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Fluidos -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. COMPARTIMIENTO MOTOR" data-card-id="fluidos">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Niveles de Fluidos (Aceite, Refrig, Frenos)</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="II. MOTOR" data-card-id="fluidos">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Niveles de Fluidos</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -333,14 +333,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Batería -->
-        <div id="card-bateria" class="card-inspeccion bg-white rounded-[2.5rem] p-5 shadow-lg border-4 border-gray-300 transition-all duration-300" data-section="II. COMPARTIMIENTO MOTOR" data-card-id="bateria">
-            <h3 class="text-gray-800 font-black text-center text-[11px] uppercase mb-4 tracking-tighter italic border-b border-gray-100 pb-2">Estado de Batería y Sistema de Carga</h3>
+        <div id="card-bateria" class="card-inspeccion bg-white rounded-[2.5rem] p-5 shadow-lg border-4 border-gray-300 transition-all duration-300" data-section="II. MOTOR" data-card-id="bateria">
+            <h3 class="text-gray-800 font-black text-center text-[11px] uppercase mb-4 tracking-tighter italic border-b border-gray-100 pb-2">Batería y Sistema de Carga</h3>
             <div class="flex items-start justify-between mb-4">
                 <div class="space-y-3 flex-1 pr-4">
                     <div class="flex items-center bg-gray-50 p-2 rounded-xl border">
@@ -366,11 +366,11 @@
 
     <!-- ===== SECCIÓN III ===== -->
     <div class="space-y-4">
-        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">III. Bajo el Vehículo</h2>
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">III. CHASIS</h2>
 
         <!-- Amortiguadores -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="amort">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Amortiguadores</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. CHASIS" data-card-id="amort">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Suspensión y Amortiguadores</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -388,14 +388,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Fuelles -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="fuelles">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Fuelles (Transmisión, Rótulas, Dirección)</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. CHASIS" data-card-id="fuelles">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Fuelles y Rótulas</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -413,14 +413,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Neumáticos -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="neuma">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Neumáticos y repuesto</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. CHASIS" data-card-id="neuma">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Neumáticos y Repuesto</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -438,14 +438,14 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
 
         <!-- Escape -->
-        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. BAJO EL VEHÍCULO" data-card-id="escape">
-            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Estado de Línea de Escape y Sujeciones</h3></div>
+        <div class="card-inspeccion bg-white rounded-3xl shadow-lg border-4 border-gray-300 transition-all duration-300 overflow-hidden" data-section="III. CHASIS" data-card-id="escape">
+            <div class="bg-black/5 px-4 py-3 border-b border-black/10"><h3 class="text-gray-700 font-bold text-center text-xs uppercase">Línea de Escape y Sujeciones</h3></div>
             <div class="p-4">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex space-x-3">
@@ -463,7 +463,7 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-bold text-gray-400 absolute left-3 -top-2 bg-white px-1 uppercase">Detalles:</span>
-                    <input type="text" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
+                    <input type="text" maxlength="50" placeholder="OBSERVACIONES..." class="obs-input w-full border-2 border-gray-200 rounded-xl px-3 py-3 text-sm bg-white/80 uppercase focus:outline-none" oninput="guardarChecklist()">
                 </div>
             </div>
         </div>
@@ -471,10 +471,10 @@
 
     <!-- ===== SECCIÓN IV ===== -->
     <div class="space-y-4">
-        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">IV. Pastillas de Freno</h2>
+        <h2 class="font-black text-xs uppercase text-gray-500 ml-2 tracking-widest italic border-l-4 border-red-600 pl-2">IV. FRENOS</h2>
 
         <!-- Frenos Delanteros -->
-        <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-4 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" data-card-id="frenos-del" id="card-frenos-del">
+        <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-4 transition-all duration-300" data-section="IV. FRENOS" data-card-id="frenos-del" id="card-frenos-del">
             <div class="bg-red-700 text-white px-6 py-3 flex justify-between items-center">
                 <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Delanteras</h3>
                 <div class="flex flex-col items-end">
@@ -498,9 +498,9 @@
         </div>
 
         <!-- Frenos Traseros -->
-        <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-8 transition-all duration-300" data-section="IV. PASTILLAS DE FRENO" data-card-id="frenos-tras" id="card-frenos-tras">
+        <div class="card-inspeccion bg-white rounded-[2.5rem] shadow-xl border-4 border-gray-300 overflow-hidden mb-8 transition-all duration-300" data-section="IV. FRENOS" data-card-id="frenos-tras" id="card-frenos-tras">
             <div class="bg-gray-800 text-white px-6 py-3 flex justify-between items-center">
-                <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras</h3>
+                <h3 class="font-black text-[11px] uppercase tracking-widest">Pastillas Traseras y Balatas</h3>
                 <div class="flex flex-col items-end">
                     <div class="photo-gallery" id="photos-frenos-tras" style="max-width:120px;"></div>
                     <label class="bg-white/20 text-white w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 border border-white/30 cursor-pointer">
@@ -541,7 +541,7 @@
                 </div>
                 <div class="relative">
                     <span class="text-[10px] font-black text-gray-400 absolute left-3 -top-2.5 bg-white px-1 uppercase tracking-wider z-10">Notas Técnicas</span>
-                    <textarea id="notas-adicionales" oninput="guardarChecklist()" placeholder="ESCRIBA AQUÍ CUALQUIER DETALLE ADICIONAL O RECOMENDACIÓN..." class="w-full border-2 border-gray-200 rounded-2xl px-4 pt-10 pb-4 text-base bg-white/80 uppercase focus:outline-none min-h-[140px] resize-none font-bold text-gray-700 shadow-inner"></textarea>
+                    <textarea id="notas-adicionales" oninput="guardarChecklist()" maxlength="600" placeholder="ESCRIBA AQUÍ CUALQUIER DETALLE ADICIONAL O RECOMENDACIÓN..." class="w-full border-2 border-gray-200 rounded-2xl px-4 pt-10 pb-4 text-base bg-white/80 uppercase focus:outline-none min-h-[140px] resize-none font-bold text-gray-700 shadow-inner"></textarea>
                 </div>
             </div>
         </div>
@@ -717,7 +717,7 @@
 
         btn.classList.add(btnClass);
         card.setAttribute('data-status', color);
-        card.setAttribute('data-obs', 'Promedio: ' + porcentaje + '%');
+        card.setAttribute('data-obs', 'Desgaste Promedio: ' + btn.innerText);
         cardStatus[cardId] = color;
         brakeData[ruedaId] = { pct: porcentaje };
 
@@ -1005,7 +1005,7 @@
         /* ---- helpers ---- */
         const addPageFooter = () => {
             pdf.setFont('helvetica', 'normal');
-            pdf.setFontSize(9);
+            pdf.setFontSize(8.5);
             pdf.setTextColor(160, 160, 160);
             pdf.text('N.C.O v1.0.0', PW - M, PH - 5, { align: 'right' });
         };
@@ -1016,30 +1016,30 @@
 
         /* ---- ENCABEZADO PÁGINA 1 ---- */
         pdf.setFillColor(239, 68, 68);
-        pdf.rect(0, 0, PW, 34, 'F');
+        pdf.rect(0, 0, PW, 28, 'F');
         pdf.setTextColor(255, 255, 255);
         pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(26); pdf.text('TOYOTA', M, 14);
+        pdf.setFontSize(35); pdf.text('TOYOTA', M, 13);
         pdf.setFontSize(9);  pdf.setFont('helvetica', 'normal');
-        pdf.text('CONTROL DE CALIDAD - CARTONI', M, 22);
+        pdf.text('CONTROL DE CALIDAD - CARTONI', M, 20);
         pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
-        pdf.text('OT: ' + ot + '   PATENTE: ' + pat, PW - M, 11, { align: 'right' });
-        pdf.setFontSize(9);  pdf.setFont('helvetica', 'normal');
-        pdf.text('Modelo: ' + mod + '   KM: ' + km, PW - M, 18, { align: 'right' });
-        pdf.setFontSize(7.5);
-        pdf.text('Tecnico: ' + tecnicoGlobal + '  |  Asesor: ' + ase + '  |  Fecha: ' + fecha, PW - M, 26, { align: 'right' });
+        pdf.text('OT: ' + ot + '   PATENTE: ' + pat, PW - M, 9, { align: 'right' });
+        pdf.setFontSize(10);  pdf.setFont('helvetica', 'normal');
+        pdf.text('Modelo: ' + mod + '   KM: ' + km, PW - M, 16, { align: 'right' });
+        pdf.setFontSize(10);
+        pdf.text('Tecnico: ' + tecnicoGlobal + '  |  Asesor: ' + ase + '  |  Fecha: ' + fecha, PW - M, 24, { align: 'right' });
 
-        let y = 40;
+        let y = 34;
         addPageFooter();
 
         /* ---- TARJETAS ---- */
         let currentSec = '';
         const tarjetas = document.querySelectorAll('[data-section]');
-        const ROW_H = 8.5;
-        const COL_DOTS_X = M + CW * 0.48;
+        const ROW_H = 8.8;
+        const COL_DOTS_X = M + CW * 0.44;
         const DOT_GAP    = 6;
-        const COL_OBS_X  = M + CW * 0.63;
-        const COL_OBS_W  = CW * 0.37 - 2;
+        const COL_OBS_X  = M + CW * 0.57;
+        const COL_OBS_W  = CW * 0.43 - 2;
 
         tarjetas.forEach(card => {
             const sec    = card.getAttribute('data-section');
@@ -1060,6 +1060,12 @@
                 obs = p.join(' | ');
             } else if (cardId === 'frenos-del' || cardId === 'frenos-tras') {
                 obs = card.getAttribute('data-obs') || '';
+                const ruedaKey = cardId === 'frenos-del' ? 'DEL' : 'TRAS';
+                if (brakeData[ruedaKey]) {
+                    const brakePct = brakeData[ruedaKey].pct;
+                    let condMsg = brakePct <= 30 ? 'CAMBIAR' : (brakePct <= 60 ? 'AVISO PREVENTIVO' : 'BUEN ESTADO');
+                    obs = obs ? obs + ' - ' + condMsg : condMsg;
+                }
             } else if (cardId === 'obs-adicionales') {
                 obs = document.getElementById('notas-adicionales')?.value || '';
             } else {
@@ -1069,14 +1075,13 @@
 
             /* Encabezado de sección */
             if (sec !== currentSec) {
-                y = checkPage(y, 18);
                 pdf.setFillColor(31, 41, 55);
                 pdf.rect(M, y, CW, 8, 'F');
                 pdf.setTextColor(255, 255, 255);
                 pdf.setFont('helvetica', 'bold');
-                pdf.setFontSize(8);
+                pdf.setFontSize(11);
                 pdf.text(sec, M + 3, y + 5.5);
-                y += 10;
+                y += 8;
 
                 if (sec !== 'V. OBSERVACIONES ADICIONALES') {
                     /* Cabecera de columnas */
@@ -1084,12 +1089,12 @@
                     pdf.rect(M, y, CW, 6, 'F');
                     pdf.setTextColor(80, 80, 80);
                     pdf.setFont('helvetica', 'bold');
-                    pdf.setFontSize(7);
-                    pdf.text('OK', COL_DOTS_X,           y + 4.2, { align: 'center' });
-                    pdf.text('!',  COL_DOTS_X + DOT_GAP, y + 4.2, { align: 'center' });
-                    pdf.text('X',  COL_DOTS_X + DOT_GAP * 2, y + 4.2, { align: 'center' });
-                    pdf.text('OBSERVACIONES', COL_OBS_X, y + 4.2);
-                    y += 7;
+                    pdf.setFontSize(8.5);
+                    pdf.text('OK', COL_DOTS_X,           y + 4.5, { align: 'center' });
+                    pdf.text('!',  COL_DOTS_X + DOT_GAP, y + 4.5, { align: 'center' });
+                    pdf.text('X',  COL_DOTS_X + DOT_GAP * 2, y + 4.5, { align: 'center' });
+                    pdf.text('OBSERVACIONES', COL_OBS_X, y + 4.5);
+                    y += 7.5;
                 }
                 currentSec = sec;
             }
@@ -1097,13 +1102,11 @@
             /* Fila de observaciones generales (sección V) */
             if (sec === 'V. OBSERVACIONES ADICIONALES') {
                 y += 6; /* espacio extra entre título y texto */
-                y = checkPage(y, 14);
                 pdf.setTextColor(40, 40, 40);
                 pdf.setFont('helvetica', 'normal');
                 pdf.setFontSize(11);
                 const lines = pdf.splitTextToSize(obs || 'Sin comentarios adicionales.', CW - 4);
                 lines.forEach(line => {
-                    y = checkPage(y, 8);
                     pdf.text(line, M + 2, y);
                     y += 7;
                 });
@@ -1112,7 +1115,6 @@
             }
 
             /* Fila normal */
-            y = checkPage(y, ROW_H + 1);
             const even = Array.from(tarjetas).indexOf(card) % 2 === 0;
             pdf.setFillColor(even ? 250 : 244, even ? 250 : 244, even ? 250 : 244);
             pdf.rect(M, y, CW, ROW_H, 'F');
@@ -1122,8 +1124,8 @@
             /* Título item */
             pdf.setTextColor(30, 30, 30);
             pdf.setFont('helvetica', 'bold');
-            pdf.setFontSize(7.5);
-            const titW = CW * 0.46 - 4;
+            pdf.setFontSize(9);
+            const titW = CW * 0.40 - 4;
             const titLines = pdf.splitTextToSize(tit, titW);
             pdf.text(titLines[0], M + 2, y + ROW_H / 2 + 2.5);
 
@@ -1146,7 +1148,7 @@
             if (obs) {
                 pdf.setTextColor(60, 60, 60);
                 pdf.setFont('helvetica', 'normal');
-                pdf.setFontSize(6.5);
+                pdf.setFontSize(7.8);
                 const obsLines = pdf.splitTextToSize(obs.toUpperCase(), COL_OBS_W);
                 pdf.text(obsLines[0], COL_OBS_X + 1, y + ROW_H / 2 + 2.5);
             }
