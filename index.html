@@ -1063,7 +1063,7 @@
                 const ruedaKey = cardId === 'frenos-del' ? 'DEL' : 'TRAS';
                 if (brakeData[ruedaKey]) {
                     const brakePct = brakeData[ruedaKey].pct;
-                    let condMsg = brakePct <= 30 ? 'CAMBIAR' : (brakePct <= 60 ? 'AVISO PREVENTIVO' : 'BUEN ESTADO');
+                    let condMsg = brakePct <= 30 ? 'CAMBIAR' : (brakePct <= 50 ? 'AVISO PREVENTIVO' : 'BUEN ESTADO');
                     obs = obs ? obs + ' - ' + condMsg : condMsg;
                 }
             } else if (cardId === 'obs-adicionales') {
